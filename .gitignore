@@ -1,0 +1,12 @@
+# Never commit secrets or downloaded credentials
+*.pem
+*.key
+*.pfx
+*.publishsettings
+.env
+*.secret
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
