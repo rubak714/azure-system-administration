@@ -1,8 +1,14 @@
-# 💾 Azure Storage: Redundancy, SAS & Lifecycle (AZ-104, portal-built)
+# 💾 Azure Storage: Redundancy, SAS, and Lifecycle (AZ-104, portal-built)
 
-This is the second lab in the set. Storage looks easy until the exam asks you to pick between five redundancy options and four ways to grant access, all of which sound similar. This lab teaches you those differences by building them.
+This is the second lab in the set. Storage looks simple at first. Then the exam asks me to choose between five redundancy options and four ways to grant access. They all sound alike. This lab shows me the differences by building each one.
 
-The scenario: an app team needs a place to store user uploads. It has to survive a datacentre problem. An auditor needs to read a copy from another region. I have to give a contractor read-only access to one container for a day. And old files should get cheaper over time on their own.
+**The scenario:** an app team needs somewhere to store user uploads.
+
+The needs are:
+- The files must survive a datacentre problem.
+- An auditor must be able to read a copy from another region.
+- A contractor needs read-only access to one container, for one day.
+- Old files should get cheaper over time, on their own.
 
 ## 🏗️ What I build here
 
@@ -25,93 +31,143 @@ graph TD
 ## 📦 Phase 1 - Create the account and choose redundancy
 
 ### 💾 Create the storage account and understand redundancy
-In the Azure portal, go to **Storage accounts > Create**. When you reach **Redundancy**, stop and read the options:
+1. In the portal, go to **Storage accounts**, then **Create**.
+2. Fill in the basics. When I reach **Redundancy**, I stop and read the options.
 
 | Option | What it means |
 |---|---|
 | LRS | 3 copies in one datacentre. Cheapest. Survives a disk or rack failure. |
-| ZRS | 3 copies across availability zones. Survives a whole zone going down, stays in-region. |
-| GRS | LRS plus an async copy in a paired region. Survives a region outage (failover only). |
-| GZRS | ZRS plus paired-region copy. Zone and region protection. |
-| RA-GRS or RA-GZRS | Same as GRS or GZRS but you can read the secondary region now without failover. |
+| ZRS | 3 copies across availability zones. Survives a whole zone going down. Stays in-region. |
+| GRS | LRS plus an async copy in a paired region. Survives a region outage, but only after a failover. |
+| GZRS | ZRS plus a paired-region copy. Zone and region protection. |
+| RA-GRS or RA-GZRS | Same as GRS or GZRS, but I can read the secondary region now, without a failover. |
 
-For this scenario I pick **RA-GRS**, because "an auditor needs to read a copy from another region" is what **RA-** means. Plain GRS only exposes the secondary after a failover.
+For this scenario I pick **RA-GRS**. The auditor needs to read a copy from another region. The **RA-** prefix is what allows that. Plain GRS opens the secondary copy only after a failover.
 
-**Screenshot:** `01-storage-account-redundancy.png`
+![Storage account redundancy options](screenshots/01-storage-account-redundancy.png)
+
+*Choosing RA-GRS while creating the storage account.*
 
 ## 📁 Phase 2 - Put something in it
 
 ### 📂 Create a container and upload a file
-Create a container named `uploads` and upload your test file.
-Open **Access keys** and look at the two keys there. These are full control over the whole account. This is why you do not hand them out. (Blur them in the screenshot.)
+1. Create a container named `uploads`.
+2. Upload my test file into it.
+3. Open **Access keys** and look at the two keys. Each key is full control over the whole account. That is why I do not share them. I blur them in the screenshot.
 
-**Screenshot:** `02-containers-and-blobs.png`, `03-access-keys.png`
+![uploads container with a blob](screenshots/02-containers-and-blobs.png)
+
+*The uploads container with my test file inside.*
+
+![Storage account access keys](screenshots/03-access-keys.png)
+
+*The two account keys. They give full control, so I keep them secret.*
 
 ## 🔐 Phase 3 - The four ways to grant access
 
-Each method has a different security model and use case.
+There are four ways to grant access. Each one has a different security model and use case.
 
-### 🎫 Generate SAS tokens
-On the blob, select **Generate SAS**. Set it to read-only and set the expiration to one hour. Copy the SAS URL and open it in a private browser tab. It works. Now you have delegated scoped, time-limited access without sharing a key.
+### 🎫 Generate a SAS token
+1. On the blob, select **Generate SAS**.
+2. Set it to read-only. Set the expiry to one hour.
+3. Copy the SAS URL. Open it in a private browser tab. It works.
 
-**Screenshot:** `04-sas-token-config.png`, `05-sas-url-works.png`
+This gives scoped, time-limited access without sharing a key.
+
+![Generate SAS settings](screenshots/04-sas-token-config.png)
+
+*A read-only SAS token, set to expire in one hour.*
+
+![SAS URL opening the blob](screenshots/05-sas-url-works.png)
+
+*The SAS URL opens the file in a private tab. The access works.*
 
 ### 🔑 Stored access policy and revocation
-On the container, go to **Access policy > Add policy**. Create a new policy with read-only access. Now create a SAS that references this policy. Then delete the policy and refresh your SAS link. It no longer works. This is the only clean way to revoke a SAS before it expires, and the exam loves this question.
+1. On the container, go to **Access policy**, then **Add policy**.
+2. Create a policy with read-only access.
+3. Create a new SAS that points to this policy.
+4. Delete the policy. Refresh the SAS link. It no longer works.
 
-**Screenshot:** `06-stored-access-policy.png`, `07-sas-revoked.png`
+**Important detail:** A stored access policy is the only clean way to revoke a SAS before it expires. This is the production pattern. An inline SAS token cannot be revoked. It only stops when it expires. The exam asks about this often.
 
-**Important detail:** Stored access policy is the only way to revoke a SAS without waiting for it to expire. This is the production pattern. Inline SAS tokens cannot be revoked.
+![Stored access policy on the container](screenshots/06-stored-access-policy.png)
+
+*A stored access policy on the uploads container.*
+
+![SAS link no longer works](screenshots/07-sas-revoked.png)
+
+*After I delete the policy, the SAS link stops working.*
 
 ### 👤 RBAC data roles
-On the storage account, go to **Access control (IAM)** and assign the **Storage Blob Data Reader** role to a user. This is identity-based and the most secure of the four methods. No secrets to leak.
+1. On the storage account, go to **Access control (IAM)**.
+2. Assign the **Storage Blob Data Reader** role to a user.
 
-**Screenshot:** `08-rbac-data-role.png`
+This is identity-based. It is the most secure of the four methods. There are no secrets to leak.
 
-### 📊 Understanding control plane vs data plane
-There is a control plane (managing the account, RBAC roles like Owner or Contributor) and a data plane (reading the actual blobs, roles like Storage Blob Data Reader). Being Contributor on the account does not automatically let you read blob data unless the account allows key access or you also hold a data role. Feeling that gap is worth many marks on the exam.
+![Storage Blob Data Reader role assignment](screenshots/08-rbac-data-role.png)
+
+*The Storage Blob Data Reader role assigned to a user.*
+
+### 📊 Control plane vs data plane
+There are two planes:
+- The **control plane** manages the account. Roles like Owner and Contributor live here.
+- The **data plane** reads the actual blobs. Roles like Storage Blob Data Reader live here.
+
+Being Contributor on the account does not let me read blob data on its own. I also need a data role, or the account must allow key access. This gap is worth remembering for the exam.
 
 ## ♻️ Phase 4 - Lifecycle management
 
-### 🔄 Set up lifecycle rules
-Go to **Lifecycle management > Add rule**. Move blobs from Hot to Cool after 30 days, and maybe to Archive after 180 days.
+### 🔄 Set up a lifecycle rule
+1. Go to **Lifecycle management**, then **Add rule**.
+2. Move blobs from Hot to Cool after 30 days.
+3. Optionally, move them to Archive after 180 days.
 
-**Important detail:** Archive is offline. You cannot read an archived blob directly. You have to rehydrate it first, which takes hours. So if your requirement says "needs instant read," Archive rules it out.
+**Important detail:** Archive is offline. I cannot read an archived blob directly. I have to rehydrate it first, and that takes hours. So if a requirement says "needs instant read", Archive is ruled out.
 
-**Screenshot:** `09-lifecycle-rule.png`
+![Lifecycle management rule](screenshots/09-lifecycle-rule.png)
+
+*A lifecycle rule that moves blobs from Hot to Cool after 30 days.*
 
 ## 🛡️ Phase 5 - Network security
 
 ### 🚪 Set up the firewall
-Go to **Networking > Firewalls and virtual networks** and switch from **All networks** to **Selected networks**. This restricts the public endpoint to only your VNet or specific IP ranges.
+1. Go to **Networking**, then **Firewalls and virtual networks**.
+2. Switch from **All networks** to **Selected networks**.
 
-**Screenshot:** `10-firewall-vnet.png`
+This limits the public endpoint to my VNet, or to specific IP ranges.
+
+![Storage firewall set to selected networks](screenshots/10-firewall-vnet.png)
+
+*The firewall set to selected networks only.*
 
 ### 🔒 Add a private endpoint
-Add a **private endpoint** so the account is reachable on a private IP inside a VNet. This is different from a service endpoint.
+1. Add a **private endpoint** to the account.
 
-**Screenshot:** `11-private-endpoint.png`
+Now the account is reachable on a private IP inside a VNet. This is not the same as a service endpoint.
+
+![Private endpoint on the storage account](screenshots/11-private-endpoint.png)
+
+*A private endpoint gives the account a private IP inside a VNet.*
 
 ### 📍 Service endpoint vs private endpoint
-The exam distinction here:
-- A service endpoint keeps the public endpoint and just restricts it to your VNet. Free and cloud-only.
-- A private endpoint gives the account an actual private IP via Private Link. Works from on-premises over VPN or ExpressRoute.
+- A **service endpoint** keeps the public endpoint. It just restricts it to my VNet. It is free and cloud-only.
+- A **private endpoint** gives the account a real private IP through Private Link. It works from on-premises over VPN or ExpressRoute.
 
-If the requirement says "private IP" or "reachable from on-premises," it is a private endpoint.
+If the requirement says "private IP" or "reachable from on-premises", the answer is a private endpoint.
 
 ## 🧯 Break it and fix it
-Set the firewall to **Selected networks** with no networks added. Then try to open your blob from the portal or via your SAS link. Access is denied. Now figure out whether to add your client IP, add a VNet, or flip "allow trusted Microsoft services." Fix it. Locking yourself out and getting back in teaches storage networking better than any lecture.
+I set the firewall to **Selected networks**, but I add no networks. Then I try to open my blob, from the portal and through my SAS link. Access is denied. Now I work out the fix. The options are: add my client IP, add a VNet, or allow trusted Microsoft services. I pick the right one and get back in. Locking myself out and getting back in teaches storage networking better than any lecture.
 
 ## 🎯 Key points this lab reinforces
-- **RA-** prefix means read the secondary region without failover. **ZRS** means zone resilience in-region.
-- Stored access policy is the clean way to revoke a SAS before it expires.
+- The **RA-** prefix means I can read the secondary region without a failover. **ZRS** means zone resilience inside one region.
+- A stored access policy is the clean way to revoke a SAS early.
 - Control-plane RBAC (Contributor) is not the same as data-plane access to blobs.
-- Archive must be rehydrated before reading.
-- Service endpoint (free, cloud-only) vs private endpoint (private IP, on-premises reach).
-- Lifecycle rules reduce cost by moving old blobs to cheaper tiers automatically.
+- An archived blob must be rehydrated before I can read it.
+- Service endpoint: free, cloud-only. Private endpoint: private IP, reaches on-premises.
+- Lifecycle rules cut cost by moving old blobs to cheaper tiers on their own.
 
 ## 🏭 If this were production, not a lab
-I would disable account-key access entirely and use RBAC plus private endpoint only. I would turn on soft delete and versioning. I would use customer-managed keys in Key Vault. Every SAS I issued would be tied to a stored access policy so I could pull it back if needed.
+I would turn off account-key access and use RBAC plus a private endpoint only. I would turn on soft delete and versioning. I would use customer-managed keys in Key Vault. Every SAS I issued would be tied to a stored access policy, so I could pull it back when needed.
 
 ---
 *Part of my AZ-104 hands-on set. Built in the portal. See `cli-reference/commands.md` for the same steps as `az` commands.*
