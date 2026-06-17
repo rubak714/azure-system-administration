@@ -13,9 +13,6 @@ Everything here is built in the portal on purpose. That is how the exam works. I
 
 These are study labs. I do not claim they are more than that. Each one is written to show that I understand the work. That means the reason behind each choice, and the mistakes that are easy to make. They are not copies of a tutorial. If you are a recruiter reading this, the value is in the reasoning inside each lab's README.
 
-> [!NOTE]
-> This work was inspired by **Luke J Byrne** and his [AZ-104 Projects x5](https://puzzling-carpenter-942.notion.site/AZ104-Projects-x5-144c2273d8ba802f944deb0a865fa4f0) set. I restructured it into these seven labs. I rewrote everything in my own words. I also added more depth on the exam areas I wanted to focus on: Entra ID, RBAC, IAM, and governance. Full credit to Luke at the bottom of this page.
-
 ---
 
 ## 📑 Table of Contents
@@ -89,12 +86,6 @@ I repeat that three-command pattern for each lab. The history then reads as scaf
 ## 🧭 Where this goes next
 
 Some of these labs may grow beyond study work. A lab could turn into a real application, an infrastructure-as-code project, or a deployment pipeline. When that happens, I will move the folder into its own repository. I will name that repository for what it does, not for the exam it came from. I will also link it back here. The networking lab and the capstone are the most likely candidates.
-
----
-
-## 🙏 Credit
-
-The original five-project idea is from **Luke J Byrne** and his AZ-104 project set: [AZ-104 Projects x5](https://puzzling-carpenter-942.notion.site/AZ104-Projects-x5-144c2273d8ba802f944deb0a865fa4f0). I used it as a starting point. I restructured it into these seven labs. I rewrote everything in my own words. I added the exam-driven depth I wanted. Thank you to Luke for sharing the idea.
 
 ---
 
