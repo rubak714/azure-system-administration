@@ -38,7 +38,7 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 
 ## 👥 Phase 1 - Creating users and a group (Microsoft Entra ID)
 
-### Create the two users
+### 👤 Create the two users
 Sign in to the Azure portal at `portal.azure.com` using my Owner account.
 In the search bar at the top, type **Microsoft Entra ID** and select it from the results.
 In the left-hand menu of Microsoft Entra ID, select **Users**.
@@ -52,7 +52,7 @@ Repeat the previous steps to create the second user:
    - **User principal name**: `platformadmin` (full UPN `platformadmin@<tenantname>.onmicrosoft.com`).
    - **Display name**: `Platform Admin`.
 
-### Create the security group
+### 👥 Create the security group
 In the Microsoft Entra ID left-hand menu, select **Groups**.
 Select **+ New group**.
 Set **Group type** to **Security**.
@@ -67,13 +67,13 @@ Select **Create**.
 
 ## 🔑 Phase 2 - Access (RBAC)
 
-### Create the resource group
+### 📦 Create the resource group
 In the search bar, type **Resource groups** and select it.
 Select **+ Create**.
 Set **Subscription** to my subscription, **Resource group** name to `rg-identity-lab`, and **Region** to my chosen region.
 Select **Review + create**, then **Create**.
 
-### Assign roles on the resource group
+### 🔐 Assign roles on the resource group
 Open the resource group `rg-identity-lab`.
 In its left-hand menu, select **Access control (IAM)**.
 Select **+ Add**, then **Add role assignment**.
@@ -82,7 +82,7 @@ On the **Members** tab, set **Assign access to** to **User, group, or service pr
 Select **Review + assign**.
 Repeat the previous steps, but this time choose the **Contributor** role and assign it to the **Platform Admin** user (set **Assign access to** to **User, group, or service principal** and pick the user).
 
-### Sign in as the Platform Admin user
+### 🌐 Sign in as the Platform Admin user
 I am still signed in as the Owner, so I test the Platform Admin account in a **separate browser session**. This keeps my Owner session intact and avoids signing myself out.
 
 Open a new **private / incognito** browser window (`Ctrl+Shift+N` in Chrome or Edge, `Ctrl+Shift+P` in Firefox).
@@ -92,13 +92,13 @@ On first sign-in, Azure requires me to **change the password**. I set a new one 
 If the tenant has **security defaults** enabled (new tenants do by default), I am also shown a **"More information required"** prompt to register multi-factor authentication. I follow it (normally installing the Microsoft Authenticator app and scanning the QR code). This is a one-time setup.
 I am now signed in as Platform Admin, who holds **Contributor** on `rg-identity-lab`.
 
-### Confirm that Contributor cannot grant access
+### ⛔ Confirm that Contributor cannot grant access
 In the Platform Admin (incognito) session, open the resource group `rg-identity-lab`.
 Select **Access control (IAM)** > **+ Add** > **Add role assignment**, and try to assign any role to another user.
 The attempt fails: the role assignment cannot be saved. This demonstrates that **Contributor can create and manage resources but cannot grant access to others.** Granting access requires the **Owner** or **User Access Administrator** role.
 I close the incognito window and continue as the Owner.
 
-### Understanding scope and inheritance
+### 📊 Understanding scope and inheritance
 Azure RBAC scopes are arranged in a hierarchy, from broadest to narrowest:
 
 **Management group → Subscription → Resource group → Individual resource**
@@ -120,7 +120,7 @@ A mental model I keep:
 
 ## 🛡️ Phase 3 - Guardrails (Azure Policy)
 
-### Restrict allowed regions
+### 🌍 Restrict allowed regions
 In the search bar, type **Policy** and select it.
 In the left-hand menu, select **Assignments**, then **Assign policy**.
 Set the **Scope** to my subscription (or to `rg-identity-lab`).
@@ -129,7 +129,7 @@ On the **Parameters** tab, set the allowed location to my single region.
 Select **Review + create**, then **Create**.
 Attempt to create any resource in a *different* region. It is blocked at the validation step with a policy error message.
 
-### Require a cost tag
+### 🏷️ Require a cost tag
 Select **Assign policy** again.
 Set the **Scope** as before.
 For **Policy definition**, search for and select the built-in **Require a tag on resources**.
@@ -144,14 +144,14 @@ Attempt to create a resource without that tag. It is blocked.
 
 ## 🔒 Phase 4 - Locks and cost
 
-### Add a resource lock
+### 🔒 Add a resource lock
 Open `rg-identity-lab` (or a single resource inside it).
 In the left-hand menu, select **Settings**, then **Locks**.
 Select **+ Add**, give the lock a name, set **Lock type** to **ReadOnly**, and select **OK**.
 Attempt to delete the resource group. It is blocked. Attempt to modify it. It is also blocked.
 Edit the lock and change **Lock type** to **CanNotDelete**. Now modification is allowed again, but deletion is still blocked.
 
-### Add a budget alert
+### 💰 Add a budget alert
 In the search bar, type **Cost Management** and select it (or open the subscription and select **Cost Management** in its menu).
 Select **Budgets**, then **+ Add**.
 Set a small monthly budget amount and a budget period.
