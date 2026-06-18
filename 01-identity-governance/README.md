@@ -43,13 +43,13 @@ I have just been handed a **fresh subscription for a small team** and been told 
 
 ```mermaid
 graph TB
-    subgraph People["👥 People & Groups"]
+    subgraph People["👥 ENTRA ID<br/>People and Groups"]
         U1["App Reader"]
         U2["Platform Admin"]
         GRP["grp-app-readers"]
     end
     
-    subgraph Roles["🎯 Role Assignment"]
+    subgraph Roles["🎯 Roles"]
         R1["Reader Role"]
         R2["Contributor Role"]
     end
@@ -71,18 +71,18 @@ graph TB
     RG --> LOCK
     RG --> POL
     
-    style People fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style Roles fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
-    style Target fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style Guards fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
+    style People fill:#3a3f44,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
+    style Roles fill:#4a5157,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
+    style Target fill:#3a3f44,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
+    style Guards fill:#4a5157,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
     style U1 fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
     style U2 fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
     style GRP fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
-    style R1 fill:#5a7a6b,stroke:#3d6145,stroke-width:1px,color:#e0e0e0
-    style R2 fill:#5a7a6b,stroke:#3d6145,stroke-width:1px,color:#e0e0e0
-    style RG fill:#6a7a5a,stroke:#4d5a3d,stroke-width:1px,color:#e0e0e0
-    style LOCK fill:#7a6a8a,stroke:#5a4a6a,stroke-width:1px,color:#e0e0e0
-    style POL fill:#7a6a8a,stroke:#5a4a6a,stroke-width:1px,color:#e0e0e0
+    style R1 fill:#4a5157,stroke:#2a3337,stroke-width:1px,color:#e0e0e0
+    style R2 fill:#4a5157,stroke:#2a3337,stroke-width:1px,color:#e0e0e0
+    style RG fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
+    style LOCK fill:#4a5157,stroke:#2a3337,stroke-width:1px,color:#e0e0e0
+    style POL fill:#4a5157,stroke:#2a3337,stroke-width:1px,color:#e0e0e0
 ```
 
 ## 🧭 Azure Governance: Core Concepts
@@ -91,41 +91,41 @@ graph TB
 
 ```mermaid
 graph TB
-    subgraph Layer1["🪪 Entra ID"]
-        ENTRA["Users and Groups<br/>Who can authenticate"]
+    subgraph Layer1["🪪 ENTRA ID<br/>Users and Groups"]
+        ENTRA["Who can authenticate"]
     end
     
-    subgraph Layer2["🎯 RBAC Roles"]
-        RBAC["Reader, Contributor, Owner<br/>What permissions they have"]
+    subgraph Layer2["🎯 RBAC ROLES<br/>What permissions exist"]
+        RBAC["Reader<br/>Contributor<br/>Owner"]
     end
     
-    subgraph Layer3["📍 Scope"]
-        SCOPE["Subscription or Resource Group<br/>Where the role applies"]
+    subgraph Layer3["📍 SCOPE<br/>Where role applies"]
+        SCOPE["Subscription<br/>Resource Group<br/>Individual Resource"]
     end
     
-    subgraph Layer4["🎮 IAM Portal"]
-        IAM["Access Control pane<br/>Where role assignment happens"]
+    subgraph Layer4["🎮 IAM PORTAL<br/>How to assign"]
+        IAM["Access Control pane<br/>Role Assignment"]
     end
     
-    subgraph Layer5["🛡️ Guardrails"]
-        GUARD["Policy and Locks<br/>What resources are allowed"]
+    subgraph Layer5["🛡️ GUARDRAILS<br/>What resources allowed"]
+        GUARD["Policy and Locks"]
     end
     
-    ENTRA --> RBAC
-    RBAC --> SCOPE
-    SCOPE --> IAM
-    IAM --> GUARD
+    ENTRA -->|users to| RBAC
+    RBAC -->|roles at| SCOPE
+    SCOPE -->|assigned in| IAM
+    IAM -->|enforced by| GUARD
     
-    style Layer1 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style Layer2 fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
-    style Layer3 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style Layer4 fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
-    style Layer5 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style Layer1 fill:#3a3f44,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
+    style Layer2 fill:#4a5157,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
+    style Layer3 fill:#3a3f44,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
+    style Layer4 fill:#4a5157,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
+    style Layer5 fill:#3a3f44,stroke:#5a6b7a,stroke-width:2px,color:#e0e0e0
     style ENTRA fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
-    style RBAC fill:#5a7a6b,stroke:#3d6145,stroke-width:1px,color:#e0e0e0
-    style SCOPE fill:#6a7a5a,stroke:#4d5a3d,stroke-width:1px,color:#e0e0e0
-    style IAM fill:#7a6a8a,stroke:#5a4a6a,stroke-width:1px,color:#e0e0e0
-    style GUARD fill:#7a5a7a,stroke:#5a3a5a,stroke-width:1px,color:#e0e0e0
+    style RBAC fill:#4a5157,stroke:#2a3337,stroke-width:1px,color:#e0e0e0
+    style SCOPE fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
+    style IAM fill:#4a5157,stroke:#2a3337,stroke-width:1px,color:#e0e0e0
+    style GUARD fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
 ```
 
 **Read this flow top to bottom:**
