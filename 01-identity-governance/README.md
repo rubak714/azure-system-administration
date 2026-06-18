@@ -98,6 +98,8 @@ Select **Access control (IAM)** > **+ Add** > **Add role assignment**, and try t
 The attempt fails: the role assignment cannot be saved. This demonstrates that **Contributor can create and manage resources but cannot grant access to others.** Granting access requires the **Owner** or **User Access Administrator** role.
 I close the incognito window and continue as the Owner.
 
+![alt text](screenshots/09-platform-admin-denied.png)
+
 ### 📊 Understanding scope and inheritance
 Azure RBAC scopes are arranged in a hierarchy, from broadest to narrowest:
 
