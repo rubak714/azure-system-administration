@@ -37,57 +37,39 @@ I have been handed a requirement to **secure and manage file storage** for an ap
 ## 🏗️ What I build here
 
 ```mermaid
-graph LR
-    subgraph Storage["💾 STORAGE ACCOUNT"]
-        SA["StorageV2<br/>RA-GRS"]
-    end
+graph TB
+    ACC["💾 Storage Account<br/>StorageV2 RA-GRS"]
     
-    subgraph Data["📦 DATA ORGANIZATION"]
-        CON["uploads<br/>Container"]
-        BLOB["sample.txt<br/>Blob"]
-        CON --> BLOB
-    end
+    CON["📦 Container<br/>uploads"]
     
-    subgraph Access["🔐 ACCESS METHODS"]
-        SAS["SAS Token<br/>Time-limited"]
-        RBAC["RBAC Role<br/>Identity-based"]
-        SAP["Stored Policy<br/>Revocable"]
-    end
+    BLOB["📄 Blob<br/>sample.txt"]
     
-    subgraph Lifecycle["♻️ COST OPTIMIZATION"]
-        HOT["Hot Tier<br/>Frequent access"]
-        COOL["Cool Tier<br/>30+ days"]
-        HOT --> COOL
-    end
+    SAP["🎯 Stored Policy SAS<br/>Revocable"]
     
-    subgraph Network["🛡️ NETWORK SECURITY"]
-        FW["Firewall<br/>Selected networks"]
-        PE["Private Endpoint<br/>Private IP"]
-    end
+    RBAC["🔐 RBAC Role<br/>Blob Data Reader"]
     
-    SA --> CON
-    SA --> SAS
-    SA --> RBAC
-    SA --> SAP
-    SA --> HOT
-    SA --> FW
-    SA --> PE
+    LIFE["♻️ Lifecycle Rule<br/>Hot to Cool"]
     
-    style Storage fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style Data fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
-    style Access fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style Lifecycle fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
-    style Network fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style SA fill:#5a6b7a,stroke:#3d5580,stroke-width:2px,color:#e0e0e0
-    style CON fill:#5a7a6b,stroke:#3d6145,stroke-width:2px,color:#e0e0e0
-    style BLOB fill:#5a7a6b,stroke:#3d6145,stroke-width:2px,color:#e0e0e0
-    style SAS fill:#6a7a5a,stroke:#4d5a3d,stroke-width:2px,color:#e0e0e0
-    style RBAC fill:#6a7a5a,stroke:#4d5a3d,stroke-width:2px,color:#e0e0e0
-    style SAP fill:#6a7a5a,stroke:#4d5a3d,stroke-width:2px,color:#e0e0e0
-    style HOT fill:#7a6a8a,stroke:#5a4a6a,stroke-width:2px,color:#e0e0e0
-    style COOL fill:#7a6a8a,stroke:#5a4a6a,stroke-width:2px,color:#e0e0e0
-    style FW fill:#5a7a6b,stroke:#3d6145,stroke-width:2px,color:#e0e0e0
-    style PE fill:#5a7a6b,stroke:#3d6145,stroke-width:2px,color:#e0e0e0
+    FW["🚪 Firewall<br/>Selected networks"]
+    
+    PE["🔒 Private Endpoint<br/>Private IP"]
+    
+    ACC --> CON
+    CON --> BLOB
+    ACC --> SAP
+    ACC --> RBAC
+    ACC --> LIFE
+    ACC --> FW
+    ACC --> PE
+    
+    style ACC fill:#2a2a2a,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
+    style CON fill:#404040,stroke:#e0e0e0,stroke-width:1px,color:#e0e0e0
+    style BLOB fill:#404040,stroke:#e0e0e0,stroke-width:1px,color:#e0e0e0
+    style SAP fill:#404040,stroke:#e0e0e0,stroke-width:1px,color:#e0e0e0
+    style RBAC fill:#404040,stroke:#e0e0e0,stroke-width:1px,color:#e0e0e0
+    style LIFE fill:#404040,stroke:#e0e0e0,stroke-width:1px,color:#e0e0e0
+    style FW fill:#404040,stroke:#e0e0e0,stroke-width:1px,color:#e0e0e0
+    style PE fill:#404040,stroke:#e0e0e0,stroke-width:1px,color:#e0e0e0
 ```
 
 ## 🧠 Storage Core Concepts
@@ -96,39 +78,39 @@ graph LR
 
 ```mermaid
 graph TB
-    subgraph Local["📍 LOCAL RESILIENCE"]
-        LRS["🪑 LRS<br/>3 copies one datacenter<br/>Cheapest, basic protection"]
-        ZRS["🔢 ZRS<br/>3 copies across zones<br/>Zone-aware, same region"]
-    end
+    LRS["🪑 LRS<br/>One datacenter<br/>3 copies<br/>Cheapest"]
     
-    subgraph Regional["🌍 REGIONAL RESILIENCE"]
-        GRS["↔️ GRS<br/>Paired-region copy<br/>Read only after failover"]
-        RAGRS["↔️🔍 RA-GRS<br/>Paired-region readable<br/>Read secondary now"]
-    end
+    ZRS["🔢 ZRS<br/>Across zones<br/>Same region<br/>Zone resilient"]
     
-    subgraph Combined["🔗 COMBINED PROTECTION"]
-        GZRS["🔗 GZRS<br/>Zones + paired region<br/>Zone + region resilient"]
-        RAGZRS["🔗🔍 RA-GZRS<br/>Zones + readable copy<br/>Ultimate protection"]
-    end
+    GRS["↔️ GRS<br/>Paired region<br/>Read after failover<br/>Async copy"]
     
-    style Local fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style Regional fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
-    style Combined fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
-    style LRS fill:#5a6b7a,stroke:#3d5580,stroke-width:2px,color:#e0e0e0
-    style ZRS fill:#5a6b7a,stroke:#3d5580,stroke-width:2px,color:#e0e0e0
-    style GRS fill:#5a7a6b,stroke:#3d6145,stroke-width:2px,color:#e0e0e0
-    style RAGRS fill:#5a7a6b,stroke:#3d6145,stroke-width:2px,color:#e0e0e0
-    style GZRS fill:#7a6a8a,stroke:#5a4a6a,stroke-width:2px,color:#e0e0e0
-    style RAGZRS fill:#7a6a8a,stroke:#5a4a6a,stroke-width:2px,color:#e0e0e0
+    RAGRS["↔️🔍 RA-GRS<br/>Paired region<br/>Read anytime<br/>No failover needed"]
+    
+    GZRS["🔗 GZRS<br/>Zones + Region<br/>Maximum protection<br/>Most expensive"]
+    
+    LRS --> ZRS
+    ZRS --> GRS
+    GRS --> RAGRS
+    RAGRS --> GZRS
+    
+    style LRS fill:#2a2a2a,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
+    style ZRS fill:#404040,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
+    style GRS fill:#2a2a2a,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
+    style RAGRS fill:#404040,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
+    style GZRS fill:#2a2a2a,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
 ```
 
-**Key distinctions:**
+**Understanding each option:**
 
-- **LRS vs ZRS:** LRS spreads copies across drives in one building. ZRS spreads across buildings (zones) in one region. ZRS costs more but survives zone outages.
+- **LRS (Locally Redundant Storage):** Three copies in one datacenter. Protects against disk or server failure. Cheapest option. Use for dev/test or data I can lose.
 
-- **GRS vs RA-GRS:** GRS copies to paired region asynchronously. I can read it only after a failover (disaster). RA-GRS (read-access) lets me read it now, without failover. I need RA- when an auditor must access the copy live.
+- **ZRS (Zone Redundant Storage):** Three copies spread across three availability zones in the same region. If an entire zone goes down, data survives. Costs more than LRS but keeps data in the same region. Use for critical data that stays in-region.
 
-- **GZRS and RA-GZRS:** Zone protection inside region, plus paired-region copy. Most expensive but maximum resilience.
+- **GRS (Geo-Redundant Storage):** Copies to a paired region automatically, but asynchronously. I can only read the secondary copy **after a failover** (disaster). If region goes down, I trigger failover manually (hours of downtime).
+
+- **RA-GRS (Read-Access GRS):** Same as GRS plus I can read the secondary copy **right now** without any failover. Perfect when an auditor or backup system needs to read a live copy from another region. This is the lab choice.
+
+- **GZRS / RA-GZRS:** Zone resilience inside one region (like ZRS) PLUS a paired-region copy. Maximum protection but most expensive. Use only for mission-critical data.
 
 ## ✅ Before I started
 
@@ -313,6 +295,86 @@ Storage offers four access methods. Each has different security properties, and 
 | Stored policy SAS | Blob or container | Time-based | Yes | Contractors, partners |
 | RBAC role | Resource group or account | Role removal | Yes | Employees, services (most secure) |
 
+## 🔐 Deep dive: Access control confusion points
+
+**Why is data-plane RBAC different from control-plane RBAC?**
+
+- **Control-plane:** managing the storage account itself (create, delete, change settings)
+  - Roles: Owner, Contributor, Reader, Storage Account Contributor
+  - Where: "Access control (IAM)" on the storage account
+  - Gives you the **right to configure** storage
+
+- **Data-plane:** reading and writing actual blob data
+  - Roles: Storage Blob Data Reader, Storage Blob Data Contributor, Storage Blob Data Owner
+  - Where: "Access control (IAM)" on the storage account (different tab)
+  - Gives you the **right to access** the data
+
+**Common mistake:**
+I have Contributor role on storage account. This means I can:
+- ✓ Delete containers
+- ✓ Change settings
+- ✗ Read blob data (without a data-plane role)
+
+To read blobs, I need **both**:
+- Contributor (control-plane) OR Storage Account Contributor
+- **AND** Storage Blob Data Reader (data-plane)
+
+**Example from the lab:**
+- The auditor might have no control-plane role at all
+- But they need Storage Blob Data Reader (data-plane role)
+- Now they can only read blobs - cannot change settings or delete containers
+
+**Reference:** [Azure storage security overview](https://learn.microsoft.com/en-us/azure/storage/common/storage-security-guide)
+
+---
+
+**Why can I revoke a stored policy SAS but not ad-hoc SAS?**
+
+**Ad-hoc SAS:**
+- I generate it directly on a blob or container
+- The SAS token **contains the signature** (permission + expiry + signature hash)
+- Azure cannot revoke it because the signature is valid until expiry time
+- The only way to "revoke" it is to wait for expiry
+
+**Stored policy SAS:**
+- I create a policy on the container (named access policy)
+- I generate SAS that **references the policy** (not a direct signature)
+- When I delete the policy, the SAS URL returns 403 Forbidden immediately
+- This is production-safe
+
+**When is this tested on the exam?**
+- Question: "A contractor received a SAS link yesterday. You want to revoke it today. What do you do?"
+- Answer: Use a stored access policy. You cannot revoke ad-hoc SAS tokens.
+
+**Reference:** [Stored access policies](https://learn.microsoft.com/en-us/rest/api/storageservices/define-stored-access-policy)
+
+---
+
+**Why is Archive tier offline, and when does that matter?**
+
+**The Archive tier:**
+- Data is stored in a secondary, cheaper tier
+- Access time is measured in hours (1-15 hours depending on priority)
+- You must **rehydrate** it first - copy data back to Hot or Cool tier
+- Only after rehydration can you read it
+
+**When Archive breaks requirements:**
+- Requirement: "Users need instant access to archived data"
+- Archive is **ruled out** (no instant access)
+- Use Hot or Cool tier instead
+
+**Cost tradeoff:**
+- Archive costs ~87% less per GB than Hot
+- But rehydration costs extra and takes time
+- Use only for data you rarely access (compliance archives, 7-year retention)
+
+**Example from the lab:**
+- Blobs in Hot tier for first 30 days (active use)
+- Move to Cool tier at 30 days (occasional access)
+- Move to Archive at 180 days (long-term retention)
+
+**Reference:** [Azure Blob Storage lifecycle](https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview)
+
 ## ♻️ Phase 3 - Lifecycle management
 
 Lifecycle rules automatically move blobs to cheaper tiers as they age. This cuts costs without manual intervention.
@@ -336,25 +398,55 @@ Lifecycle rules automatically move blobs to cheaper tiers as they age. This cuts
 
 | Tier | Access time | Cost | Use case |
 |------|-------------|------|----------|
-| **Hot** | Immediate | Most expensive | Frequent access |
-| **Cool** | 30-day minimum hold | Cheaper | Infrequent access (backup, archives) |
-| **Archive** | Offline, rehydration hours | Cheapest | Long-term retention |
+| **Hot** | Immediate | Most expensive (~$0.016/GB/month) | Frequent access (active data) |
+| **Cool** | 30-day minimum hold | Cheaper (~$0.008/GB/month, 50% less) | Infrequent access (backups, archives) |
+| **Archive** | Offline, rehydration hours | Cheapest (~$0.002/GB/month, 87% less) | Long-term retention (compliance, 7-year holds) |
 
 **Important detail about Archive:**
-- Archive blobs are **offline**
-- I cannot read an archived blob directly
-- I must **rehydrate** it first (takes 1-15 hours depending on priority)
-- If a requirement says "instant read", Archive is ruled out
 
-**Lifecycle example (this lab):**
-1. Blobs start in **Hot** tier (immediate access)
-2. After 30 days - move to **Cool** tier (slower, cheaper)
-3. After 180 days - optionally move to **Archive** (cheapest, offline)
+Archive is **offline storage**. You cannot read data directly:
 
-**Cost savings:**
-- Hot: ~$0.016 per GB/month
-- Cool: ~$0.008 per GB/month (50% cheaper)
-- Archive: ~$0.002 per GB/month (87% cheaper)
+1. **Blob is archived** - stored on cheap media
+2. **You need to read it** - request rehydration
+3. **Rehydration starts** - data copies back to Hot or Cool (takes 1-15 hours)
+4. **Now you can read it** - blob is accessible
+
+**When Archive is ruled out:**
+- Requirement says "users need instant read access"
+- Requirement says "RTO must be under 1 hour"
+- Use Hot or Cool tier instead
+
+**When Archive is the right choice:**
+- Compliance requirement to keep data 7 years
+- Rarely accessed (maybe once a year for audit)
+- Cost savings are massive (87% cheaper)
+- Save thousands of dollars per year
+
+**Exam pattern:**
+- Question: "We need to read archived data in under 1 hour. Which tier?"
+- Answer: Cool tier (instant read). Archive requires rehydration (hours).
+
+**Reference:** [Azure Blob Storage access tiers](https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview)
+
+---
+
+**What does "30-day minimum hold" mean for Cool tier?**
+
+- If I move a blob to Cool tier, I must keep it there for at least 30 days
+- If I move it back to Hot tier before 30 days, I pay an **early deletion fee**
+- Early deletion fee: roughly 30 days of Cool tier storage cost
+- After 30 days, no penalty
+
+**When this matters:**
+- Do not use Cool tier for data you might need to move back quickly
+- Use Cool for backups and archives (long-term, stable)
+- Use Hot for active working data
+
+**Cost example:**
+- Blob: 100 GB
+- Move to Cool, then back to Hot after 10 days
+- Penalty: ~20 days of Cool storage cost (~$0.16)
+- This is why lifecycle rules should have a 30-day minimum
 
 ![Lifecycle management rule](screenshots/09-lifecycle-rule.png)
 
@@ -415,31 +507,69 @@ Private endpoints give the storage account a **private IP** inside a VNet. This 
 
 ### 📍 Service endpoint vs private endpoint
 
-These are often confused on the exam.
+These are often confused on the exam. Here is the **key difference**:
 
 | Feature | Service Endpoint | Private Endpoint |
 |---------|------------------|------------------|
-| Cost | Free | Charged (small hourly fee) |
+| Cost | Free | Charged (small hourly fee, ~$0.007/hour) |
 | IP type | Public (restricted) | Private (new IP) |
 | VPN/ExpressRoute | No | Yes |
-| On-premises access | No | Yes |
-| Requires DNS changes | No | Yes (DNS record points to private IP) |
+| On-premises access | No | Yes (over VPN or ExpressRoute) |
+| Requires DNS changes | No | Yes (storage.blob.core.windows.net → private IP) |
+| Configuration complexity | Simple (one toggle) | Complex (subnet, DNS, network setup) |
 
-**Service endpoint:**
-- Restricts the public endpoint to only my VNet
-- Still a public IP, just firewalled
-- Cloud-only (cannot reach from on-premises)
+**Service Endpoint explained:**
+- Public endpoint still exists
+- I just restrict it to my VNet (firewall rule that says "only from this VNet")
+- Anyone outside my VNet cannot reach it (even if they have a valid SAS token)
 - Free
+- Cloud-only (cannot reach from on-premises)
 
-**Private endpoint:**
-- Creates a new private IP inside my VNet
-- Reachable from on-premises (over VPN or ExpressRoute)
-- Requires DNS changes to route storage.blob.core.windows.net to private IP
-- Small hourly charge
+**When to use service endpoint:**
+- I have a VNet with application servers
+- I want to restrict storage to that VNet only
+- I do not need on-premises access
+- I want to save money (free)
 
-**Decision rule:**
-- "Restrict to my VNet" → Service endpoint (free)
-- "Private IP from on-premises" → Private endpoint (paid)
+**Private Endpoint explained:**
+- Storage account gets a **new private IP** (e.g., 10.0.1.5) inside my VNet
+- Public endpoint still exists but is firewalled
+- Applications in my VNet connect to the private IP (not the public IP)
+- Applications on-premises can reach it over VPN or ExpressRoute
+- Requires DNS updates so storage.blob.core.windows.net resolves to the private IP
+
+**When to use private endpoint:**
+- I have on-premises servers that need to access storage
+- I need a private IP inside my VNet
+- I can afford the hourly charge
+- I can manage DNS updates
+
+**Exam pattern:**
+- Question: "How do I allow on-premises servers to access storage?"
+- Answer: Private endpoint (on-premises cannot reach service endpoint)
+
+**Reference:** [Service endpoints vs Private Link](https://learn.microsoft.com/en-us/azure/storage/common/storage-private-endpoints-overview)
+
+---
+
+**Why does the firewall block me from the portal?**
+
+- The Azure portal and Azure CLI are Microsoft services
+- When I set firewall to "Deny all", it blocks **everything** - including Microsoft services
+- The portal needs a "trusted services" exception
+- Solution: Check "Allow trusted Microsoft services and system services"
+- Now the portal can reach storage even when firewall is restrictive
+
+**Other trusted services that can bypass firewall:**
+- Azure Backup
+- Azure Site Recovery
+- Azure Monitor
+- Azure Synapse
+- Some others
+
+**Exam pattern:**
+- Question: "I set storage firewall to deny all networks. Now the portal cannot access it. How do I fix?"
+- Answer: Enable "Allow trusted Microsoft services and system services"
 
 ## 🧯 Break it and fix it
 
