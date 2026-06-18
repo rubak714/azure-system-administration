@@ -86,27 +86,41 @@ graph TB
 **Four essential pieces that work together:**
 
 ```mermaid
-graph TD
-    A["🪪 ENTRA ID<br/><b>Authentication</b><br/>Stores users, groups, apps<br/>Handles sign-in"]
-    B["🔐 RBAC<br/><b>Authorization</b><br/>Defines roles<br/>Reader, Contributor, Owner"]
-    C["🎮 IAM<br/><b>The Mechanism</b><br/>Portal interface<br/>Assigns roles to identities<br/>Controls scope"]
-    D["📋 AZURE POLICY<br/><b>Resource Governance</b><br/>Enforces rules<br/>Region, tags, size restrictions"]
+graph TB
+    subgraph Foundation["🔑 CORE COMPONENTS"]
+        ENTRA["🪪 ENTRA ID<br/><b>Authentication Layer</b><br/>Stores users, groups, apps<br/>Handles sign-in and MFA"]
+        RBAC["🎯 RBAC<br/><b>Authorization Layer</b><br/>Defines Reader, Contributor, Owner<br/>Controls resource permissions"]
+    end
     
-    A -->|"Who?"| C
-    B -->|"Which roles?"| C
-    C -->|"Implements"| D
+    subgraph Implementation["🛠️ HOW IT WORKS"]
+        IAM["🎮 IAM Portal<br/><b>Assignment Mechanism</b><br/>Access Control pane<br/>Assigns roles at specific scopes"]
+        ENFORCE["📋 AZURE POLICY<br/><b>Enforcement Layer</b><br/>Enforces rules<br/>Region, tags, size restrictions"]
+    end
     
-    style A fill:#5A7FA8,stroke:#3D5580,stroke-width:2px,color:#fff
-    style B fill:#5A8A6B,stroke:#3D6145,stroke-width:2px,color:#fff
-    style C fill:#8A7A5A,stroke:#605A3D,stroke-width:2px,color:#fff
-    style D fill:#7A5A8A,stroke:#50354D,stroke-width:2px,color:#fff
+    subgraph Flow["⚙️ EXECUTION"]
+        PROCESS["Who + Roles → Where<br/>ENTRA ID + RBAC = Identities<br/>IAM applies roles at scope<br/>POLICY blocks violations"]
+    end
+    
+    ENTRA --> IAM
+    RBAC --> IAM
+    IAM --> ENFORCE
+    ENFORCE --> PROCESS
+    
+    style Foundation fill:#e8f4f8,stroke:#5A7FA8,stroke-width:2px,color:#333
+    style Implementation fill:#f0f8f0,stroke:#5A8A6B,stroke-width:2px,color:#333
+    style Flow fill:#f8f4e8,stroke:#8A7A5A,stroke-width:2px,color:#333
+    style ENTRA fill:#5A7FA8,stroke:#3D5580,stroke-width:2px,color:#fff
+    style RBAC fill:#5A8A6B,stroke:#3D6145,stroke-width:2px,color:#fff
+    style IAM fill:#8A7A5A,stroke:#605A3D,stroke-width:2px,color:#fff
+    style ENFORCE fill:#7A5A8A,stroke:#50354D,stroke-width:2px,color:#fff
+    style PROCESS fill:#c8b8d8,stroke:#7A5A8A,stroke-width:2px,color:#333
 ```
 
-**What each does:**
+**What each layer does:**
 
-- **Entra ID (The "Who"):** Stores users, groups, and applications. Handles authentication (passwords, MFA). Verifies identity when someone signs in.
+- **🪪 Entra ID (The "Who"):** Stores users, groups, and applications. Handles authentication (passwords, MFA). Verifies identity when someone signs in.
 
-- **RBAC (The "What permissions"):** Defines roles like Reader, Contributor, Owner. Controls what each role can do to resources.
+- **🎯 RBAC (The "What permissions"):** Defines roles like Reader, Contributor, Owner. Controls what each role can do to resources.
 
 - **IAM (The "How to grant"):** Portal interface in "Access control (IAM)" pane where I assign roles to users, groups, or service principals. Controls scope (Subscription, Resource Group, or single Resource). Brings Entra ID and RBAC together.
 
