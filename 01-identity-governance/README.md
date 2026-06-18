@@ -96,10 +96,10 @@ graph TD
     B -->|"Which roles?"| C
     C -->|"Implements"| D
     
-    style A fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
-    style B fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
-    style C fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
-    style D fill:#E91E63,stroke:#AD1457,stroke-width:3px,color:#fff
+    style A fill:#5A7FA8,stroke:#3D5580,stroke-width:2px,color:#fff
+    style B fill:#5A8A6B,stroke:#3D6145,stroke-width:2px,color:#fff
+    style C fill:#8A7A5A,stroke:#605A3D,stroke-width:2px,color:#fff
+    style D fill:#7A5A8A,stroke:#50354D,stroke-width:2px,color:#fff
 ```
 
 **What each does:**
