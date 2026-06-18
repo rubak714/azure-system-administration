@@ -43,62 +43,74 @@ I have just been handed a **fresh subscription for a small team** and been told 
 
 ```mermaid
 graph TB
-    subgraph Identity["🪪 IDENTITY"]
+    subgraph Identities["🪪 ENTRA ID (IDENTITY)"]
         U1["👤 App Reader<br/>(user)"]
         U2["👤 Platform Admin<br/>(user)"]
         GRP["👥 grp-app-readers<br/>(security group)"]
         U1 --> GRP
     end
     
-    subgraph Access["🔐 ACCESS CONTROL"]
-        READER["📖 Reader Role<br/>(read-only)"]
-        CONTRIB["✏️ Contributor Role<br/>(create/manage)"]
-        GRP --> READER
-        U2 --> CONTRIB
+    subgraph Roles["🔐 RBAC (ROLES)"]
+        READER["📖 Reader<br/>(read-only)"]
+        CONTRIB["✏️ Contributor<br/>(create/manage)"]
     end
     
-    subgraph Protection["🛡️ PROTECTION"]
-        LOCK["🔒 ReadOnly Lock<br/>(prevent delete/modify)"]
-        POL["📋 Azure Policy<br/>(enforce region + tag)"]
+    subgraph IAM_Layer["🎮 IAM (ASSIGNMENT)"]
+        ASSIGN["Access Control Pane<br/>Assign roles to identities<br/>at specific scopes"]
     end
     
-    subgraph Scope["🎯 SCOPE"]
-        RG["📦 Resource Group<br/>rg-identity-lab"]
+    subgraph Protections["🛡️ GUARDRAILS"]
+        LOCK["🔒 ReadOnly Lock"]
+        POL["📋 Azure Policy<br/>(region + tag)"]
+        BUD["💰 Budget Alert"]
     end
     
-    READER --> RG
-    CONTRIB --> RG
+    subgraph Resources["🎯 RESOURCE GROUP"]
+        RG["📦 rg-identity-lab"]
+    end
+    
+    GRP --> READER
+    U2 --> CONTRIB
+    READER --> ASSIGN
+    CONTRIB --> ASSIGN
+    ASSIGN --> LOCK
+    ASSIGN --> POL
+    ASSIGN --> BUD
     LOCK --> RG
     POL --> RG
+    BUD --> RG
 ```
 
-## 🧭 Azure Governance: The Four Pillars
+## 🧭 Azure Governance: Core Concepts
 
-Understanding how these four systems work **together**:
+**Four essential pieces that work together:**
 
 ```mermaid
-graph LR
-    A["🪪<br/>ENTRA ID<br/>(Authentication)"]
-    B["🔐<br/>RBAC<br/>(Authorization)"]
-    C["🎮<br/>IAM<br/>(Access Assignment)"]
-    D["📋<br/>AZURE POLICY<br/>(Resource Governance)"]
+graph TD
+    A["🪪 ENTRA ID<br/><b>Authentication</b><br/>Stores users, groups, apps<br/>Handles sign-in"]
+    B["🔐 RBAC<br/><b>Authorization</b><br/>Defines roles<br/>Reader, Contributor, Owner"]
+    C["🎮 IAM<br/><b>The Mechanism</b><br/>Portal interface<br/>Assigns roles to identities<br/>Controls scope"]
+    D["📋 AZURE POLICY<br/><b>Resource Governance</b><br/>Enforces rules<br/>Region, tags, size restrictions"]
     
-    A -->|"Who can sign in?"<br/>Users, Groups, Apps| B
-    B -->|"What roles exist?"<br/>Reader, Contributor, Owner| C
-    C -->|"Grant role at scope"<br/>Subscription, RG, Resource| D
-    D -->|"What resources<br/>are allowed?"<br/>Region, Tags, Size| A
+    A -->|"Who?"| C
+    B -->|"Which roles?"| C
+    C -->|"Implements"| D
     
-    style A fill:#4A90E2,color:#fff
-    style B fill:#7ED321,color:#fff
-    style C fill:#F5A623,color:#fff
-    style D fill:#E74C3C,color:#fff
+    style A fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
+    style B fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style D fill:#E91E63,stroke:#AD1457,stroke-width:3px,color:#fff
 ```
 
-**Quick reference:**
-- **Entra ID (The "Who"):** Verifies identity. Stores users, groups, apps. Handles authentication (passwords, MFA).
-- **RBAC (The "What permissions"):** Defines roles like Reader, Contributor, Owner. Controls what you can do to resources.
-- **IAM (The mechanism):** Portal interface where you assign roles to identities at specific scopes. Located in "Access control (IAM)" pane.
-- **Azure Policy (The "What's allowed"):** Enforces rules about what resources can be created—region restrictions, required tags, allowed VM sizes.
+**What each does:**
+
+- **Entra ID (The "Who"):** Stores users, groups, and applications. Handles authentication (passwords, MFA). Verifies identity when someone signs in.
+
+- **RBAC (The "What permissions"):** Defines roles like Reader, Contributor, Owner. Controls what each role can do to resources.
+
+- **IAM (The "How to grant"):** Portal interface in "Access control (IAM)" pane where I assign roles to users, groups, or service principals. Controls scope (Subscription, Resource Group, or single Resource). Brings Entra ID and RBAC together.
+
+- **Azure Policy (The "What is allowed"):** Enforces rules about what resources can be created. Controls region restrictions, required tags, allowed VM sizes. Blocks resource creation that violates policy.
 
 ## ✅ Before I started
 - An Azure subscription where I am the Owner (a free account is fine).
@@ -160,12 +172,9 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 
 ### 📦 Create the resource group
 
-**Steps:**
-- Search for **Resource groups** and open it
-- Select **+ Create**
-- Set **Subscription** to your subscription
+- Set **Subscription** to my subscription
 - Set **Resource group** name to `rg-identity-lab`
-- Set **Region** to your chosen region
+- Set **Region** to my chosen region
 - Select **Review + create** > **Create**
 
 ### 🔐 Assign roles on the resource group
@@ -187,7 +196,7 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 ### 🌐 Sign in as the Platform Admin user
 
 **Why separate session?**
-- Testing Platform Admin account in a separate browser session keeps your Owner session intact
+- Testing Platform Admin account in a separate browser session keeps my Owner session intact
 
 **Setup:**
 - Open a new **private / incognito** browser window:
@@ -200,14 +209,14 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 - Use the temporary password from user creation
 
 **First sign-in prompts:**
-- Azure will require you to **change the password** — set a new one and note it
+- Azure will require me to **change the password** - set a new one and note it
 - If tenant has **security defaults** enabled (new tenants do by default):
   - Complete **"More information required"** for MFA registration
   - Install Microsoft Authenticator app and scan QR code
   - This is a one-time setup
 
 **Result:**
-- You are now signed in as Platform Admin with **Contributor** role on `rg-identity-lab`
+- I am now signed in as Platform Admin with **Contributor** role on `rg-identity-lab`
 
 ### ⛔ Confirm that Contributor cannot grant access
 
@@ -215,7 +224,7 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 - Open resource group `rg-identity-lab`
 - Select **Access control (IAM)** > **+ Add** > **Add role assignment**
 - Try to assign any role to another user
-- **Attempt fails** — role assignment cannot be saved
+- **Attempt fails** - role assignment cannot be saved
 
 **What this demonstrates:**
 - ✓ Contributor can create and manage resources
@@ -261,10 +270,10 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 **Steps:**
 - Search for **Policy** and open it
 - Select **Assignments** > **Assign policy**
-- Set **Scope** to your subscription (or `rg-identity-lab`)
+- Set **Scope** to my subscription (or `rg-identity-lab`)
 - Next to **Policy definition**, select browse button
 - Search for **Allowed locations** and select the built-in definition
-- On **Parameters** tab: set allowed location to your single region
+- On **Parameters** tab: set allowed location to my single region
 - Select **Review + create** > **Create**
 
 **Test the policy:**
@@ -287,14 +296,11 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 - **Result:** blocked
 
 **Important details:**
-- Existing non-compliant resources are **not** deleted — they're flagged as non-compliant
+- Existing non-compliant resources are **not** deleted - they are flagged as non-compliant
 - Only **new** resources are blocked by a `Deny` effect policy
 - Tags are **not** inherited from resource group automatically
 - To make resources inherit tags: use policy with `Modify` or `Append` effect
 
-![alt text](screenshots/06-require-tag-policy.png)
-
-![alt text](screenshots/05-policy-allowed-locations.png)
 ![alt text](screenshots/06-require-tag-policy.png)
 
 ## 🔒 Phase 4 - Locks and cost
@@ -310,13 +316,13 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 - Select **OK**
 
 **Test ReadOnly lock:**
-- Attempt to delete the resource group → **blocked**
-- Attempt to modify it → **blocked**
+- Attempt to delete the resource group - BLOCKED
+- Attempt to modify it - BLOCKED
 
 **Switch to CanNotDelete:**
 - Edit the lock and change **Lock type** to **CanNotDelete**
-- Attempt to modify → **allowed** ✓
-- Attempt to delete → **blocked** ✗
+- Attempt to modify - ALLOWED ✓
+- Attempt to delete - BLOCKED ✗
 
 **Lock comparison:**
 - **ReadOnly**: blocks both modify and delete
@@ -337,12 +343,9 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 
 **Critical detail:**
 - Budget alerts **send an email** when threshold is reached
-- They do **NOT** stop, cap, or block the spend
+- They do **NOT** stop, cap, or block spending
 - This distinction is commonly tested on AZ-104
 
-![alt text](screenshots/08-cost-budget-alert.png)
-
-![alt text](screenshots/07-readonly-lock.png)
 ![alt text](screenshots/08-cost-budget-alert.png)
 
 ## 🧯 Break it and fix it
@@ -354,10 +357,10 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 **Result:**
 - Creation **fails**
 
-**Debug & fix:**
+**Debug and fix:**
 - Read the error message to understand why
 - Change the assignment to **Contributor**
-- Attempt creation again → **succeeds**
+- Attempt creation again - **succeeds**
 
 **Why this matters:**
 - Makes the principle of least privilege concrete rather than abstract
