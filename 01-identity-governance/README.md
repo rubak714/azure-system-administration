@@ -42,43 +42,41 @@ I have just been handed a **fresh subscription for a small team** and been told 
 ## 🏗️ What I build here
 
 ```mermaid
-graph TB
-    subgraph Identities["🪪 ENTRA ID (IDENTITY)"]
-        U1["👤 App Reader<br/>(user)"]
-        U2["👤 Platform Admin<br/>(user)"]
-        GRP["👥 grp-app-readers<br/>(security group)"]
+graph LR
+    subgraph Identity["🪪 IDENTITY"]
+        U1["👤 App Reader"]
+        U2["👤 Platform Admin"]
+        GRP["👥 grp-app-readers"]
         U1 --> GRP
     end
     
-    subgraph Roles["🔐 RBAC (ROLES)"]
-        READER["📖 Reader<br/>(read-only)"]
-        CONTRIB["✏️ Contributor<br/>(create/manage)"]
+    subgraph Assign["🎮 IAM ASSIGNMENT"]
+        READER["📖 Reader Role"]
+        CONTRIB["✏️ Contributor Role"]
+        GRP --> READER
+        U2 --> CONTRIB
     end
     
-    subgraph IAM_Layer["🎮 IAM (ASSIGNMENT)"]
-        ASSIGN["Access Control Pane<br/>Assign roles to identities<br/>at specific scopes"]
-    end
-    
-    subgraph Protections["🛡️ GUARDRAILS"]
+    subgraph Controls["🛡️ GUARDRAILS"]
         LOCK["🔒 ReadOnly Lock"]
-        POL["📋 Azure Policy<br/>(region + tag)"]
+        POL["📋 Azure Policy"]
         BUD["💰 Budget Alert"]
     end
     
-    subgraph Resources["🎯 RESOURCE GROUP"]
-        RG["📦 rg-identity-lab"]
+    subgraph Target["📦 RESOURCE GROUP"]
+        RG["rg-identity-lab"]
     end
     
-    GRP --> READER
-    U2 --> CONTRIB
-    READER --> ASSIGN
-    CONTRIB --> ASSIGN
-    ASSIGN --> LOCK
-    ASSIGN --> POL
-    ASSIGN --> BUD
+    READER --> LOCK
+    CONTRIB --> POL
     LOCK --> RG
     POL --> RG
     BUD --> RG
+    
+    style Identity fill:#e8f4f8,stroke:#5A7FA8,stroke-width:2px,color:#333
+    style Assign fill:#f0f8f0,stroke:#5A8A6B,stroke-width:2px,color:#333
+    style Controls fill:#f8f4e8,stroke:#8A7A5A,stroke-width:2px,color:#333
+    style Target fill:#f4e8f8,stroke:#7A5A8A,stroke-width:2px,color:#333
 ```
 
 ## 🧭 Azure Governance: Core Concepts
@@ -86,34 +84,31 @@ graph TB
 **Four essential pieces that work together:**
 
 ```mermaid
-graph TB
-    subgraph Foundation["🔑 CORE COMPONENTS"]
-        ENTRA["🪪 ENTRA ID<br/><b>Authentication Layer</b><br/>Stores users, groups, apps<br/>Handles sign-in and MFA"]
-        RBAC["🎯 RBAC<br/><b>Authorization Layer</b><br/>Defines Reader, Contributor, Owner<br/>Controls resource permissions"]
+graph LR
+    subgraph Layer1["🔑 IDENTITY & ROLES"]
+        ENTRA["🪪 Entra ID<br/>Who can sign in"]
+        RBAC["🎯 RBAC<br/>What roles exist"]
     end
     
-    subgraph Implementation["🛠️ HOW IT WORKS"]
-        IAM["🎮 IAM Portal<br/><b>Assignment Mechanism</b><br/>Access Control pane<br/>Assigns roles at specific scopes"]
-        ENFORCE["📋 AZURE POLICY<br/><b>Enforcement Layer</b><br/>Enforces rules<br/>Region, tags, size restrictions"]
+    subgraph Layer2["🎮 ASSIGNMENT"]
+        IAM["IAM Portal<br/>Assigns roles at scope"]
     end
     
-    subgraph Flow["⚙️ EXECUTION"]
-        PROCESS["Who + Roles → Where<br/>ENTRA ID + RBAC = Identities<br/>IAM applies roles at scope<br/>POLICY blocks violations"]
+    subgraph Layer3["📋 ENFORCEMENT"]
+        ENFORCE["Azure Policy<br/>Blocks violations"]
     end
     
     ENTRA --> IAM
     RBAC --> IAM
     IAM --> ENFORCE
-    ENFORCE --> PROCESS
     
-    style Foundation fill:#e8f4f8,stroke:#5A7FA8,stroke-width:2px,color:#333
-    style Implementation fill:#f0f8f0,stroke:#5A8A6B,stroke-width:2px,color:#333
-    style Flow fill:#f8f4e8,stroke:#8A7A5A,stroke-width:2px,color:#333
-    style ENTRA fill:#5A7FA8,stroke:#3D5580,stroke-width:2px,color:#fff
-    style RBAC fill:#5A8A6B,stroke:#3D6145,stroke-width:2px,color:#fff
-    style IAM fill:#8A7A5A,stroke:#605A3D,stroke-width:2px,color:#fff
-    style ENFORCE fill:#7A5A8A,stroke:#50354D,stroke-width:2px,color:#fff
-    style PROCESS fill:#c8b8d8,stroke:#7A5A8A,stroke-width:2px,color:#333
+    style Layer1 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style Layer2 fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
+    style Layer3 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style ENTRA fill:#5a6b7a,stroke:#3d5580,stroke-width:2px,color:#e0e0e0
+    style RBAC fill:#5a7a6b,stroke:#3d6145,stroke-width:2px,color:#e0e0e0
+    style IAM fill:#6a7a5a,stroke:#4d5a3d,stroke-width:2px,color:#e0e0e0
+    style ENFORCE fill:#7a6a8a,stroke:#5a4a6a,stroke-width:2px,color:#e0e0e0
 ```
 
 **What each layer does:**
