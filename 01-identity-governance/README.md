@@ -42,16 +42,63 @@ I have just been handed a **fresh subscription for a small team** and been told 
 ## 🏗️ What I build here
 
 ```mermaid
-graph TD
-    MG[Management group] --> SUB[Subscription]
-    SUB --> POL[Azure Policy: allowed region + required tag]
-    SUB --> RG[Resource group: rg-identity-lab]
-    RG --> LOCK[ReadOnly lock]
-    GRP[Security group: grp-app-readers] -->|Reader role at RG scope| RG
-    U1[User: app reader] --> GRP
-    U2[User: platform admin] -->|Contributor at RG scope| RG
-    SUB --> BUD[Budget + cost alert]
+graph TB
+    subgraph Identity["🪪 IDENTITY"]
+        U1["👤 App Reader<br/>(user)"]
+        U2["👤 Platform Admin<br/>(user)"]
+        GRP["👥 grp-app-readers<br/>(security group)"]
+        U1 --> GRP
+    end
+    
+    subgraph Access["🔐 ACCESS CONTROL"]
+        READER["📖 Reader Role<br/>(read-only)"]
+        CONTRIB["✏️ Contributor Role<br/>(create/manage)"]
+        GRP --> READER
+        U2 --> CONTRIB
+    end
+    
+    subgraph Protection["🛡️ PROTECTION"]
+        LOCK["🔒 ReadOnly Lock<br/>(prevent delete/modify)"]
+        POL["📋 Azure Policy<br/>(enforce region + tag)"]
+    end
+    
+    subgraph Scope["🎯 SCOPE"]
+        RG["📦 Resource Group<br/>rg-identity-lab"]
+    end
+    
+    READER --> RG
+    CONTRIB --> RG
+    LOCK --> RG
+    POL --> RG
 ```
+
+## 🧭 Azure Governance: The Four Pillars
+
+Understanding how these four systems work **together**:
+
+```mermaid
+graph LR
+    A["🪪<br/>ENTRA ID<br/>(Authentication)"]
+    B["🔐<br/>RBAC<br/>(Authorization)"]
+    C["🎮<br/>IAM<br/>(Access Assignment)"]
+    D["📋<br/>AZURE POLICY<br/>(Resource Governance)"]
+    
+    A -->|"Who can sign in?"<br/>Users, Groups, Apps| B
+    B -->|"What roles exist?"<br/>Reader, Contributor, Owner| C
+    C -->|"Grant role at scope"<br/>Subscription, RG, Resource| D
+    D -->|"What resources<br/>are allowed?"<br/>Region, Tags, Size| A
+    
+    style A fill:#4A90E2,color:#fff
+    style B fill:#7ED321,color:#fff
+    style C fill:#F5A623,color:#fff
+    style D fill:#E74C3C,color:#fff
+```
+
+**Quick reference:**
+- **Entra ID (The "Who"):** Verifies identity. Stores users, groups, apps. Handles authentication (passwords, MFA).
+- **RBAC (The "What permissions"):** Defines roles like Reader, Contributor, Owner. Controls what you can do to resources.
+- **IAM (The mechanism):** Portal interface where you assign roles to identities at specific scopes. Located in "Access control (IAM)" pane.
+- **Azure Policy (The "What's allowed"):** Enforces rules about what resources can be created—region restrictions, required tags, allowed VM sizes.
 
 ## ✅ Before I started
 - An Azure subscription where I am the Owner (a free account is fine).
