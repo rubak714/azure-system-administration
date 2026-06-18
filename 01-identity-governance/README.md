@@ -357,21 +357,86 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 
 ## 🧯 Break it and fix it
 
-**Scenario:**
-- Using a second account, assign **Reader** (not Contributor) at resource-group scope
-- Attempt to create a storage account in that resource group
+**The test:** Demonstrate that **Reader role cannot create resources** (least privilege in action).
 
-**Result:**
-- Creation **fails**
+### Step 1: Sign in as App Reader (the user with Reader role)
 
-**Debug and fix:**
-- Read the error message to understand why
-- Change the assignment to **Contributor**
-- Attempt creation again - **succeeds**
+**Which account to use:**
+- **NOT** yourself (Owner) - you can create anything
+- **NOT** Platform Admin - they have Contributor (can create resources)
+- **YES** App Reader - they only have Reader role (read-only)
+
+**How to sign in:**
+
+1. Open a new **private / incognito** browser window:
+   - Chrome/Edge: `Ctrl+Shift+N`
+   - Firefox: `Ctrl+Shift+P`
+
+2. Go to `portal.azure.com`
+
+3. Sign in with **App Reader** credentials:
+   - **Username:** `appreader@<tenantname>.onmicrosoft.com` (the UPN you created)
+   - **Password:** The temporary password from Phase 1 (you should have changed it already)
+
+4. You are now logged in **as App Reader** with only **Reader role** on `rg-identity-lab`
+
+### Step 2: Attempt to create a storage account
+
+**While signed in as App Reader:**
+
+1. In the portal, search for **Storage accounts**
+2. Select **Create**
+3. Fill in the basic details:
+   - Subscription: your subscription
+   - Resource group: `rg-identity-lab`
+   - Storage account name: anything unique
+4. Try to proceed to **Review + create**
+
+**What happens:**
+- **Validation fails** with an error like: "You do not have permission to perform action 'Microsoft.Storage/storageAccounts/write'"
+- This is Azure telling you that **Reader role cannot create resources**
+- The creation is **blocked by permission check**, not by resource limits
+
+**Screenshot here:**
+- Capture the error message showing permission denied
+- This proves Reader is read-only
+
+### Step 3: Fix it - upgrade the role
+
+**Back as the Owner (your main account):**
+
+1. Sign out of the App Reader incognito session
+2. Go back to your main Owner session
+3. Open resource group `rg-identity-lab`
+4. Select **Access control (IAM)**
+5. Find the `grp-app-readers` assignment (currently Reader role)
+6. Select it and choose **Edit role assignment**
+7. Change role from **Reader** to **Contributor**
+8. Save
+
+### Step 4: Try again as App Reader
+
+**Back in the App Reader incognito session:**
+
+1. Refresh the page or start a new storage account creation
+2. Fill in the same details
+3. Try to create
+
+**What happens now:**
+- **Creation succeeds** - Contributor role **can** create resources
+- This proves that upgrading the role fixed the permission issue
 
 **Why this matters:**
-- Makes the principle of least privilege concrete rather than abstract
-- Demonstrates permission boundaries in practice
+
+This test demonstrates:
+- ✓ Reader role: read-only, cannot create anything
+- ✓ Contributor role: can create and manage resources
+- ✓ **Least privilege principle** in action
+- ✓ How Azure permission errors guide you to the solution
+
+**Take screenshots of:**
+1. Permission denied error (Reader attempt)
+2. Successful creation (after upgrading to Contributor)
 
 ## 🎯 Key points this lab reinforces
 
