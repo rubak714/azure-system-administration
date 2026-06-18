@@ -362,7 +362,7 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 ### Step 1: Sign in as App Reader (the user with Reader role)
 
 **Which account to use:**
-- **NOT** yourself (Owner) - you can create anything
+- **NOT** myself (as Owner) - I can create anything
 - **NOT** Platform Admin - they have Contributor (can create resources)
 - **YES** App Reader - they only have Reader role (read-only)
 
@@ -375,8 +375,8 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 2. Go to `portal.azure.com`
 
 3. Sign in with **App Reader** credentials:
-   - **Username:** `appreader@<tenantname>.onmicrosoft.com` (the UPN you created)
-   - **Password:** The temporary password from Phase 1 (you should have changed it already)
+   - **Username:** `appreader@<tenantname>.onmicrosoft.com` (the UPN I created)
+   - **Password:** The temporary password from Phase 1 (I should have changed it already)
 
 4. You are now logged in **as App Reader** with only **Reader role** on `rg-identity-lab`
 
@@ -387,7 +387,7 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 1. In the portal, search for **Storage accounts**
 2. Select **Create**
 3. Fill in the basic details:
-   - Subscription: your subscription
+   - Subscription: my subscription
    - Resource group: `rg-identity-lab`
    - Storage account name: anything unique
 4. Try to proceed to **Review + create**
@@ -403,11 +403,11 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 
 ### Step 3: Fix it - upgrade the role
 
-**Back as the Owner (your main account):**
+**Back as the Owner (my main account):**
 
-1. Sign out of the App Reader incognito session
-2. Go back to your main Owner session
-3. Open resource group `rg-identity-lab`
+1. I signed out of the App Reader incognito session
+2. I went back to my main Owner session
+3. I opened resource group `rg-identity-lab`
 4. Select **Access control (IAM)**
 5. Find the `grp-app-readers` assignment (currently Reader role)
 6. Select it and choose **Edit role assignment**
