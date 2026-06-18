@@ -43,135 +43,98 @@ I have just been handed a **fresh subscription for a small team** and been told 
 
 ```mermaid
 graph TB
-    subgraph People["👥 ENTRA ID: WHO CAN SIGN IN"]
-        U1["👤 App Reader (user)"]
-        U2["👤 Platform Admin (user)"]
-        GRP["👥 grp-app-readers (group)"]
+    subgraph People["👥 People & Groups"]
+        U1["App Reader"]
+        U2["Platform Admin"]
+        GRP["grp-app-readers"]
     end
     
-    subgraph Assignment["🎮 IAM: ROLE ASSIGNMENT HAPPENS HERE"]
-        direction TB
-        SCOPE["At Subscription/RG scope"]
-        R1["Reader role → grp-app-readers"]
-        R2["Contributor role → Platform Admin"]
-        SCOPE --> R1
-        SCOPE --> R2
+    subgraph Roles["🎯 Role Assignment"]
+        R1["Reader Role"]
+        R2["Contributor Role"]
     end
     
-    subgraph Scope["📦 RESOURCE GROUP: rg-identity-lab"]
-        direction TB
-        EFFECT["What they can actually do"]
-        READER_EFFECT["grp-app-readers: read-only"]
-        CONTRIB_EFFECT["Platform Admin: create and modify"]
-        EFFECT --> READER_EFFECT
-        EFFECT --> CONTRIB_EFFECT
+    subgraph Target["📦 Resource Group"]
+        RG["rg-identity-lab"]
     end
     
-    subgraph Controls["🛡️ GUARDRAILS: LIMITS ON WHAT RESOURCES CAN BE"]
-        LOCK["🔒 ReadOnly Lock"]
-        POL["📋 Azure Policy: allowed regions"]
-        BUD["💰 Budget Alert: cost tracking"]
+    subgraph Guards["🛡️ Guardrails"]
+        LOCK["ReadOnly Lock"]
+        POL["Azure Policy"]
     end
     
     U1 -.-> GRP
-    U2 -.-> Assignment
-    GRP -.-> R1
+    U2 -.-> R2
+    GRP --> R1
+    R1 --> RG
+    R2 --> RG
+    RG --> LOCK
+    RG --> POL
     
-    R1 --> READER_EFFECT
-    R2 --> CONTRIB_EFFECT
-    
-    Scope --> Controls
-    
-    style People fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
-    style Assignment fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
-    style Scope fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
-    style Controls fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
-    style SCOPE fill:#FFB74D,stroke:#E65100,stroke-width:1px,color:#333
-    style R1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#333
-    style R2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#333
-    style EFFECT fill:#A5D6A7,stroke:#2E7D32,stroke-width:1px,color:#333
-    style READER_EFFECT fill:#C8E6C9,stroke:#2E7D32,stroke-width:1px,color:#333
-    style CONTRIB_EFFECT fill:#C8E6C9,stroke:#2E7D32,stroke-width:1px,color:#333
+    style People fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style Roles fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
+    style Target fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style Guards fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
+    style U1 fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
+    style U2 fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
+    style GRP fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
+    style R1 fill:#5a7a6b,stroke:#3d6145,stroke-width:1px,color:#e0e0e0
+    style R2 fill:#5a7a6b,stroke:#3d6145,stroke-width:1px,color:#e0e0e0
+    style RG fill:#6a7a5a,stroke:#4d5a3d,stroke-width:1px,color:#e0e0e0
+    style LOCK fill:#7a6a8a,stroke:#5a4a6a,stroke-width:1px,color:#e0e0e0
+    style POL fill:#7a6a8a,stroke:#5a4a6a,stroke-width:1px,color:#e0e0e0
 ```
 
-## 🧭 Azure Governance: The Role Assignment Hierarchy
+## 🧭 Azure Governance: Core Concepts
 
-**How identity, roles, and scope connect:**
+**Five essential pieces:**
 
 ```mermaid
-graph TD
-    subgraph Identity["🪪 MICROSOFT ENTRA ID<br/>(Directory Layer)"]
-        USERS["Users, Groups, Service Principals"]
-        DIR["Directory Roles: Global Admin, User Admin"]
+graph TB
+    subgraph Layer1["🪪 Entra ID"]
+        ENTRA["Users and Groups<br/>Who can authenticate"]
     end
     
-    subgraph RBAC["🎯 AZURE RBAC ROLES<br/>(What you can do)"]
-        direction TB
-        READER["📖 Reader - Read only"]
-        CONTRIBUTOR["✏️ Contributor - Create and modify"]
-        OWNER["👑 Owner - Full control + grant access"]
-        STORAGE["Storage Blob Data Reader"]
-        READER ---|Different scopes| CONTRIBUTOR
-        CONTRIBUTOR ---|can apply at| OWNER
+    subgraph Layer2["🎯 RBAC Roles"]
+        RBAC["Reader, Contributor, Owner<br/>What permissions they have"]
     end
     
-    subgraph Scope["📍 SCOPE HIERARCHY<br/>(Where role applies)"]
-        direction TB
-        MG["📊 Management Group (widest)"]
-        SUB["📋 Subscription"]
-        RG["📦 Resource Group"]
-        RES["🔧 Individual Resource (narrowest)"]
-        MG --> SUB
-        SUB --> RG
-        RG --> RES
+    subgraph Layer3["📍 Scope"]
+        SCOPE["Subscription or Resource Group<br/>Where the role applies"]
     end
     
-    subgraph IAM_Portal["🎮 IAM PORTAL<br/>(How to assign)"]
-        ASSIGN["Click Access Control<br/>Add Role Assignment<br/>Choose: Who + Role + Scope"]
+    subgraph Layer4["🎮 IAM Portal"]
+        IAM["Access Control pane<br/>Where role assignment happens"]
     end
     
-    subgraph Controls["🛡️ GUARDRAILS<br/>(What resources CAN be)"]
-        POLICY["Azure Policy"]
-        LOCK["Resource Lock"]
+    subgraph Layer5["🛡️ Guardrails"]
+        GUARD["Policy and Locks<br/>What resources are allowed"]
     end
     
-    USERS --> RBAC
-    DIR --> RBAC
-    RBAC --> Scope
-    Scope --> IAM_Portal
-    IAM_Portal --> Controls
+    ENTRA --> RBAC
+    RBAC --> SCOPE
+    SCOPE --> IAM
+    IAM --> GUARD
     
-    style Identity fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
-    style RBAC fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
-    style Scope fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
-    style IAM_Portal fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
-    style Controls fill:#F44336,stroke:#C62828,stroke-width:2px,color:#fff
-    style USERS fill:#64B5F6,stroke:#1565C0,stroke-width:1px,color:#000
-    style DIR fill:#64B5F6,stroke:#1565C0,stroke-width:1px,color:#000
-    style READER fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#333
-    style CONTRIBUTOR fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#333
-    style OWNER fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#333
-    style STORAGE fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#333
-    style MG fill:#A5D6A7,stroke:#2E7D32,stroke-width:1px,color:#333
-    style SUB fill:#A5D6A7,stroke:#2E7D32,stroke-width:1px,color:#333
-    style RG fill:#A5D6A7,stroke:#2E7D32,stroke-width:1px,color:#333
-    style RES fill:#A5D6A7,stroke:#2E7D32,stroke-width:1px,color:#333
-    style ASSIGN fill:#CE93D8,stroke:#6A1B9A,stroke-width:1px,color:#333
-    style POLICY fill:#EF9A9A,stroke:#C62828,stroke-width:1px,color:#333
-    style LOCK fill:#EF9A9A,stroke:#C62828,stroke-width:1px,color:#333
+    style Layer1 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style Layer2 fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
+    style Layer3 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style Layer4 fill:#474d53,stroke:#5a6268,stroke-width:2px,color:#e0e0e0
+    style Layer5 fill:#3a3f44,stroke:#4a5257,stroke-width:2px,color:#e0e0e0
+    style ENTRA fill:#5a6b7a,stroke:#3d5580,stroke-width:1px,color:#e0e0e0
+    style RBAC fill:#5a7a6b,stroke:#3d6145,stroke-width:1px,color:#e0e0e0
+    style SCOPE fill:#6a7a5a,stroke:#4d5a3d,stroke-width:1px,color:#e0e0e0
+    style IAM fill:#7a6a8a,stroke:#5a4a6a,stroke-width:1px,color:#e0e0e0
+    style GUARD fill:#7a5a7a,stroke:#5a3a5a,stroke-width:1px,color:#e0e0e0
 ```
 
-**Read this diagram top to bottom:**
+**Read this flow top to bottom:**
 
-1. **🪪 Entra ID (who can access):** Users, groups, and service principals that exist in the directory.
-
-2. **🎯 Azure RBAC Roles (what they can do):** Reader, Contributor, Owner, and many others. Each role has specific permissions.
-
-3. **📍 Scope (where the role applies):** Role inheritance flows downward - a role at subscription level applies to all resource groups and resources below it.
-
-4. **🎮 IAM Portal (how I assign):** Where I click to say "this group gets this role at this scope."
-
-5. **🛡️ Guardrails (what resources are allowed):** Policy and locks limit what can exist or be changed, regardless of role.
+- **🪪 Entra ID:** Users and groups that exist in the directory.
+- **🎯 RBAC Roles:** Reader, Contributor, Owner. Each defines specific permissions.
+- **📍 Scope:** Where the role applies (Subscription, Resource Group, or single Resource).
+- **🎮 IAM Portal:** Where I click to assign a role to a user or group at a specific scope.
+- **🛡️ Guardrails:** Policies and locks that limit what resources can exist or be changed.
 
 ## ✅ Before I started
 - An Azure subscription where I am the Owner (a free account is fine).
