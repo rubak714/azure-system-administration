@@ -136,15 +136,27 @@ graph LR
 
 ### 🔄 Choose the redundancy option
 
-**Five options explained:**
+**Five redundancy options:**
 
-| Option | Protection | When to use |
-|--------|-----------|-----------|
-| **LRS** | 3 copies one datacenter | Dev/test, non-critical data, lowest cost |
-| **ZRS** | 3 copies across zones (same region) | Needs zone resilience, stays in-region |
-| **GRS** | LRS plus async copy in paired region | Needs region failover, can read only after failover |
-| **RA-GRS** | GRS plus readable copy now (no failover) | Auditor needs live secondary copy |
-| **GZRS / RA-GZRS** | Zone resilience plus paired region | Maximum protection |
+| Redundancy Type | Primary Region Datacenters | Secondary Region Datacenters | Total Copies Maintained |
+|---|---|---|---|
+| **LRS** (Locally Redundant Storage) | 1 datacenter | 0 (No replication) | 3 total copies (all in one building) |
+| **ZRS** (Zone-Redundant Storage) | 3 separate datacenters | 0 (No replication) | 3 total copies (1 per datacenter) |
+| **GRS** (Geo-Redundant Storage) | 1 datacenter | 1 datacenter | 6 total copies (LRS primary + LRS secondary) |
+| **GZRS** (Geo-Zone-Redundant Storage) | 3 separate datacenters | 1 datacenter | 6 total copies (ZRS primary + LRS secondary) |
+| **RA-GRS** (Read-Access GRS) | 1 datacenter | 1 datacenter | 6 total copies (readable without failover) |
+| **RA-GZRS** (Read-Access GZRS) | 3 separate datacenters | 1 datacenter | 6 total copies (readable without failover) |
+
+**When to use each option:**
+
+| Option | When to use |
+|--------|-----------|
+| **LRS** | Dev/test, non-critical data, lowest cost, can tolerate datacenter loss |
+| **ZRS** | Needs zone resilience within one region, critical data that stays in-region |
+| **GRS** | Needs region failover protection, can read secondary only after failover |
+| **GZRS** | Maximum protection within region plus paired region backup, most expensive |
+| **RA-GRS** | Auditor needs live secondary copy without failover, need readable backup in paired region |
+| **RA-GZRS** | Maximum protection with readable secondary region, zone resilience primary plus readable backup |
 
 **For this lab:**
 I select **RA-GRS** because:
