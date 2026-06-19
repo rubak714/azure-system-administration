@@ -28,7 +28,7 @@ During the SAS token generation process, several interdependent settings must be
 
 **Why this is needed:**
 - The container needs to allow blob-level access, even when you're using SAS tokens
-- This setting works independently from SAS tokens—both must allow access
+- This setting works independently from SAS tokens - both must allow access
 
 ---
 
@@ -53,7 +53,7 @@ During the SAS token generation process, several interdependent settings must be
 
 **Why this is needed:**
 - The storage account key is used cryptographically to sign and validate SAS tokens
-- This is a deliberate security control—organizations can disable keys if they use only RBAC and managed identity
+- This is a deliberate security control - organizations can disable keys if they use only RBAC and managed identity
 - For this lab, we need it enabled to demonstrate SAS token generation
 
 **Note:** This is different from the container access level. Both must be enabled for SAS tokens to work.
@@ -156,6 +156,54 @@ During the SAS token generation process, several interdependent settings must be
 
 **Summary for this issue:**
 White page = ✅ Success. The SAS token is working. The blank appearance is just how browsers render plain text files without formatting.
+
+---
+
+## Issue 6: Stored access policy SAS requires blob-level generation
+
+**Error:** "AuthenticationFailed" - "Signature did not match. String to sign used was /blob/storagelab121455/$root contractor-read..."
+
+**Root cause:**
+- When generating a SAS from a stored access policy, the policy must be generated from the **blob level**, not the container level
+- Generating from container level creates a policy reference that doesn't match the blob path
+- The signature validation fails because the Azure Storage service expects a blob path but the policy was created at container scope
+
+**What was changed:**
+- Deleted the policy created at container level
+- Recreated the workflow: click on **specific blob** (abcd.txt) > **Generate SAS** > select the policy
+
+**Correct process for stored policy SAS:**
+
+**Step 1: Create the policy (on container)**
+1. Open storage account > **Containers** > select `uploads`
+2. Select **Access policy** tab
+3. Select **+ Add policy**
+4. Name: `contractor-read`
+5. Permissions: check **Read**
+6. Expiry: set to tomorrow (or desired date)
+7. Click **OK**
+
+**Step 2: Generate the SAS (from blob, not container)**
+1. Still in the same container, find your blob (`abcd.txt`)
+2. **Right-click the blob** and select **Generate SAS**
+3. A dialog appears with options
+4. Select your policy name from the dropdown (e.g., `contractor-read`)
+5. Click **Generate** or **Generate SAS URL and token**
+6. Copy the **SAS URL** and test it
+
+**Why this works:**
+- The policy exists at the container level (this is correct)
+- But the SAS token is generated at the blob level (this is required)
+- The blob-level generation creates a URL that includes the full blob path: `/uploads/abcd.txt?sv=...`
+- This path allows the signature to validate correctly against the policy
+
+**Why the error occurred:**
+- Generating the SAS from the **container** (not the blob) skips the blob path
+- The resulting URL was `/uploads?sv=...` (missing the blob name)
+- The signature validation failed because the storage service expected `/uploads/abcd.txt` but got `/uploads` instead
+
+**Key takeaway:**
+Even though the policy is stored at the **container level**, you must generate the SAS token from the **blob level** to include the blob path in the resulting URL. Both policy creation (container) and SAS generation (blob) are required.
 
 ---
 
