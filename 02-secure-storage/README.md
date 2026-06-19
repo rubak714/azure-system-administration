@@ -566,7 +566,7 @@ Archive is **offline storage**. You cannot read data directly:
 
 ![Lifecycle management rule](screenshots/07-lifecycle-rule.png)
 
-*A lifecycle rule that moves blobs from Hot to Cool after 30 days.*
+*A lifecycle rule that moves blobs from Hot to Cool after 7 days.*
 
 ## 🛡️ Phase 4 - Network security
 
@@ -602,6 +602,30 @@ Storage accounts are public by default - anyone on the internet can reach them (
 ### 🔒 Add a private endpoint
 
 Private endpoints give the storage account a **private IP** inside a VNet. This is different from restricting the public endpoint.
+
+**Prerequisite: Create a Virtual Network (VNet) and Subnet**
+
+Before you can create a private endpoint, you must have a VNet with at least one subnet. The private endpoint will be deployed into this subnet and get a private IP address.
+
+**Steps to create a VNet:**
+1. Search for **Virtual networks** in the portal
+2. Select **Create**
+3. Fill in basics:
+   - **Subscription:** your subscription
+   - **Resource group:** `rg-storage-lab`
+   - **Name:** `vnet-storage-lab` (or your preferred name)
+4. Set **Address space** to `10.0.0.0/16` (standard /16 for labs)
+5. On the **Subnets** tab, create a subnet:
+   - **Subnet name:** `subnet-storage`
+   - **Subnet address range:** `10.0.1.0/24`
+6. Review and create
+
+**Result:**
+- VNet created with address space 10.0.0.0/16
+- Subnet created with address range 10.0.1.0/24
+- Private endpoints will deploy into this subnet with private IPs like 10.0.1.5
+
+**Now create the private endpoint:**
 
 **Steps:**
 1. Select **Private endpoints** from the left menu
