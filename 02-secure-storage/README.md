@@ -120,6 +120,68 @@ graph LR
 - A small test file to upload
 - About 45 minutes
 
+## 📦 Prerequisite - Create resource group and storage policies
+
+### 📂 Create a new resource group for storage
+
+**Steps:**
+1. In the portal, search for **Resource groups**
+2. Select **Create**
+3. Set **Subscription** to my subscription
+4. Set **Resource group name** to `rg-storage-lab`
+5. Set **Region** to my chosen region (this matters for policy enforcement)
+6. Select **Review + create** > **Create**
+
+**Why a separate resource group:**
+- Keeps storage lab isolated from identity lab (project 01)
+- Allows storage-specific policies without affecting other resources
+- Each lab scenario stands independently
+
+### 🛡️ Create storage-specific Azure Policies
+
+Storage policies enforce compliance rules. I create policies similar to project 01 but tailored for storage resources.
+
+**Policy 1: Restrict allowed locations for storage**
+
+**Steps:**
+1. Search for **Policy** and open it
+2. Select **Assignments** > **Assign policy**
+3. Set **Scope** to `rg-storage-lab`
+4. Next to **Policy definition**, select browse button
+5. Search for **Allowed locations** and select the built-in definition
+6. On **Parameters** tab: set allowed location to my single region (same as resource group region)
+7. Select **Review + create** > **Create**
+
+**What this does:**
+- Storage accounts can only be created in the region I specify
+- Attempts to create in other regions fail at validation
+
+**Policy 2: Require a storage-specific tag**
+
+**Steps:**
+1. Select **Assign policy** again
+2. Set **Scope** to `rg-storage-lab`
+3. For **Policy definition**: search for and select built-in **Require a tag on resources**
+4. On **Parameters** tab: set tag name to `StorageType`
+5. Select **Review + create** > **Create**
+
+**What this does:**
+- Every resource in `rg-storage-lab` must have a `StorageType` tag
+- Resources without the tag cannot be created
+- Examples: `StorageType: production`, `StorageType: backup`, `StorageType: archive`
+
+**Policy 3: Deny storage accounts without encryption at rest**
+
+**Steps:**
+1. Select **Assign policy** again
+2. Set **Scope** to `rg-storage-lab`
+3. For **Policy definition**: search for **Deny storage accounts that do not use HTTPS**
+4. Select **Review + create** > **Create**
+
+**What this does:**
+- Forces storage accounts to use secure (HTTPS) connections
+- Blocks insecure configurations
+
 ## 📦 Phase 1 - Create the account and choose redundancy
 
 ### 💾 Create the storage account
