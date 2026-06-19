@@ -397,9 +397,12 @@ To see my tenant domain before I start: in the portal, search for **Microsoft En
 - This is Azure telling you that **Reader role cannot create resources**
 - The creation is **blocked by permission check**, not by resource limits
 
-**Screenshot here:**
+**Screenshot :**
 - Capture the error message showing permission denied
 - This proves Reader is read-only
+
+![alt text](screenshots/10-appreader-storage-denied.png)
+
 
 ### Step 3: Fix it - upgrade the role
 
@@ -434,9 +437,11 @@ This test demonstrates:
 - ✓ **Least privilege principle** in action
 - ✓ How Azure permission errors guide you to the solution
 
-**Take screenshots of:**
-1. Permission denied error (Reader attempt)
-2. Successful creation (after upgrading to Contributor)
+**Screenshot:**
+- Successful creation (after upgrading to Contributor)
+
+![alt text](screenshots/11-appreader-storage-accepted.png)
+
 
 ## 🎯 Key points this lab reinforces
 
