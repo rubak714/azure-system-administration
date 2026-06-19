@@ -203,30 +203,6 @@ Storage policies enforce compliance rules. I create policies similar to project 
 - Lowercase letters and numbers only
 - 3 to 24 characters
 
-**Advanced settings during creation:**
-
-On the **Advanced** tab, configure:
-
-**Soft delete for blobs:**
-- Set to **Enabled**
-- Days to retain: **7 days** (standard recovery window for labs)
-- Soft delete helps recover accidentally deleted blobs without administrator intervention
-
-**Public access level:**
-- Set to **Disabled**
-- Prevents anonymous access to blobs
-- Access is controlled via SAS, RBAC, or stored policies (taught later in this lab)
-
-**Access tier:**
-- Select **Hot**
-- Hot tier means blobs are immediately available (no rehydration delay)
-- For this lab, Hot is appropriate (you read blobs immediately)
-- Cool and Archive tiers are managed by lifecycle rules (Phase 3), not at creation time
-
-**Minimum TLS version:**
-- Set to **TLS 1.2** or higher
-- Required for the "Secure transfer" policy to validate correctly
-
 ### 🔄 Choose the redundancy option
 
 **Five redundancy options:**
@@ -262,6 +238,30 @@ I select **RA-GRS** because:
 ![Storage account redundancy options](screenshots/01-storage-account-redundancy.png)
 
 *Choosing RA-GRS during storage account creation.*
+
+**Advanced settings during creation:**
+
+On the **Advanced** tab, configure:
+
+**Soft delete for blobs:**
+- Set to **Enabled**
+- Days to retain: **7 days** (standard recovery window for labs)
+- Soft delete helps recover accidentally deleted blobs without administrator intervention
+
+**Public access level:**
+- Set to **Disabled**
+- Prevents anonymous access to blobs
+- Access is controlled via SAS, RBAC, or stored policies (taught later in this lab)
+
+**Access tier:**
+- Select **Hot**
+- Hot tier means blobs are immediately available (no rehydration delay)
+- For this lab, Hot is appropriate (you read blobs immediately)
+- Cool and Archive tiers are managed by lifecycle rules (Phase 3), not at creation time
+
+**Minimum TLS version:**
+- Set to **TLS 1.2** or higher
+- Required for the "Secure transfer" policy to validate correctly
 
 ### 📁 Create a container and upload a file
 
