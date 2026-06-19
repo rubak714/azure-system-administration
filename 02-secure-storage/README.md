@@ -564,7 +564,7 @@ Archive is **offline storage**. You cannot read data directly:
 - Penalty: ~20 days of Cool storage cost (~$0.16)
 - This is why lifecycle rules should have a 30-day minimum
 
-![Lifecycle management rule](screenshots/09-lifecycle-rule.png)
+![Lifecycle management rule](screenshots/07-lifecycle-rule.png)
 
 *A lifecycle rule that moves blobs from Hot to Cool after 30 days.*
 
@@ -593,9 +593,11 @@ Storage accounts are public by default - anyone on the internet can reach them (
 - Application servers in my VNet: can access ✓
 - Random internet user: blocked ✗
 
-![Storage firewall set to selected networks](screenshots/10-firewall-vnet.png)
+![Storage firewall set to my office IPv4 Address](screenshots/08-firewall-vnet-01.png)
+![Storage firewall set to future resources](screenshots/08-firewall-vnet-02.png)
+09-firewall-vnet-02.png
 
-*The firewall set to deny by default, then add specific networks.*
+*The firewall set to deny by default, then add specific virtual networks.*
 
 ### 🔒 Add a private endpoint
 
