@@ -1,6 +1,6 @@
 # 💾 Azure Storage: Redundancy, SAS, and Lifecycle (AZ-104, portal-built)
 
-This is the second lab in my AZ-104 set. Storage appears simple at first. Then the exam asks me to choose between five redundancy options and four ways to grant access. They all sound similar. This lab shows the differences by building each one.
+This is the second lab in my AZ-104 set. Storage appears simple at first. The AZ-104 exam tests understanding of five redundancy options and four ways to grant access. They all sound similar. This lab builds each one so I understand the differences.
 
 **Exam status:** Not yet attempted. This lab builds practical storage security and resilience skills tested in AZ-104.
 
@@ -170,7 +170,7 @@ I select **RA-GRS** because:
 
 ## 🔐 Phase 2 - Four ways to grant access
 
-Storage offers four access methods. Each has different security properties, and the exam tests the differences.
+Storage offers four access methods. Each has different security properties, and I need to know the trade-offs for the AZ-104 exam.
 
 ### 1️⃣ Account keys (full control)
 
@@ -240,7 +240,7 @@ Storage offers four access methods. Each has different security properties, and 
 - Ad-hoc SAS cannot be revoked at all
 
 **Comparison on the exam:**
-- The exam often asks: "How do I revoke a SAS that is already issued?"
+- A likely AZ-104 question: "How do I revoke a SAS that is already issued?"
 - Answer: Use a stored access policy. Ad-hoc SAS cannot be revoked.
 
 ![Stored access policy on the container](screenshots/06-stored-access-policy.png)
@@ -342,9 +342,9 @@ To read blobs, I need **both**:
 - When I delete the policy, the SAS URL returns 403 Forbidden immediately
 - This is production-safe
 
-**When is this tested on the exam?**
-- Question: "A contractor received a SAS link yesterday. You want to revoke it today. What do you do?"
-- Answer: Use a stored access policy. You cannot revoke ad-hoc SAS tokens.
+**Why this matters for the exam:**
+- Likely question: "A contractor received a SAS link yesterday. I want to revoke it today. What do I do?"
+- Answer: Use a stored access policy. I cannot revoke ad-hoc SAS tokens.
 
 **Reference:** [Stored access policies](https://learn.microsoft.com/en-us/rest/api/storageservices/define-stored-access-policy)
 
@@ -422,8 +422,8 @@ Archive is **offline storage**. You cannot read data directly:
 - Cost savings are massive (87% cheaper)
 - Save thousands of dollars per year
 
-**Exam pattern:**
-- Question: "We need to read archived data in under 1 hour. Which tier?"
+**Exam pattern I need to know:**
+- Likely question: "We need to read archived data in under 1 hour. Which tier?"
 - Answer: Cool tier (instant read). Archive requires rehydration (hours).
 
 **Reference:** [Azure Blob Storage access tiers](https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview)
@@ -544,8 +544,8 @@ These are often confused on the exam. Here is the **key difference**:
 - I can afford the hourly charge
 - I can manage DNS updates
 
-**Exam pattern:**
-- Question: "How do I allow on-premises servers to access storage?"
+**Exam pattern I need to know:**
+- Likely question: "How do I allow on-premises servers to access storage?"
 - Answer: Private endpoint (on-premises cannot reach service endpoint)
 
 **Reference:** [Service endpoints vs Private Link](https://learn.microsoft.com/en-us/azure/storage/common/storage-private-endpoints-overview)
@@ -567,8 +567,8 @@ These are often confused on the exam. Here is the **key difference**:
 - Azure Synapse
 - Some others
 
-**Exam pattern:**
-- Question: "I set storage firewall to deny all networks. Now the portal cannot access it. How do I fix?"
+**Exam pattern I need to know:**
+- Likely question: "I set storage firewall to deny all networks. Now the portal cannot access it. How do I fix?"
 - Answer: Enable "Allow trusted Microsoft services and system services"
 
 ## 🧯 Break it and fix it
@@ -619,7 +619,7 @@ Both fail.
 - Service endpoint: keep public IP, restrict to VNet (free)
 - Private endpoint: new private IP through Private Link (paid, on-premises capable)
 
-**Common exam mistakes:**
+**Important concepts for the AZ-104 exam:**
 - Confusing "can read data" with "can manage account" (data-plane vs control-plane RBAC)
 - Thinking ad-hoc SAS can be revoked (it cannot - use stored policy)
 - Thinking Archive tier allows instant reads (it does not - rehydration required)
