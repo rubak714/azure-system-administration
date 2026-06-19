@@ -175,7 +175,7 @@ Storage policies enforce compliance rules. I create policies similar to project 
 **Steps:**
 1. Select **Assign policy** again
 2. Set **Scope** to `rg-storage-lab`
-3. For **Policy definition**: search for **Deny storage accounts that do not use HTTPS**
+3. For **Policy definition**: search for **Secure transfer to storage accounts should be enabled**
 4. Select **Review + create** > **Create**
 
 **What this does:**
