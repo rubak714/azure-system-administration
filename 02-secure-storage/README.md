@@ -326,6 +326,10 @@ Storage offers four access methods. Each has different security properties, and 
 - Contractor downloads a specific file for a few hours
 - Sharing a temporary download link
 
+![SAS on the container](screenshots/03-sas-access.png)
+
+**→ Troubleshooting:** See [Issues.md](Issues.md) for detailed troubleshooting guide covering authentication errors, role assignment, and SAS token generation issues.
+
 ### 3️⃣ Stored access policy (revocable SAS)
 
 **Create a stored access policy:**
