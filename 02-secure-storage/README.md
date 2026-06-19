@@ -387,7 +387,7 @@ Storage offers four access methods. Each has different security properties, and 
 - Data-plane: reading blob data (Storage Blob Data Reader, Storage Blob Data Contributor)
 
 **Common mistake:**
-- Making someone Contributor on the account does **not** give them blob read access
+- Making someone Owner (myself)/ Contributor on the account does **not** give them blob read access
 - They need a **data-plane role** (Blob Data Reader) to actually read blobs
 
 **Storage RBAC roles:**
@@ -397,9 +397,9 @@ Storage offers four access methods. Each has different security properties, and 
 - **Storage Queue Data Reader** - read queue messages
 - **Storage Queue Data Contributor** - read and send messages
 
-![Storage Blob Data Reader role assignment](screenshots/08-rbac-data-role.png)
+![Storage Blob Data Reader role assignment](screenshots/06-rbac-data-role.png)
 
-*Storage Blob Data Reader role assigned to a user.*
+*Storage Blob Data Reader role assigned to a user/me.*
 
 ## 📊 When to use each method
 
@@ -408,7 +408,7 @@ Storage offers four access methods. Each has different security properties, and 
 | Account key | Entire account | Never | Complex | Dev/test only |
 | Ad-hoc SAS | Blob or container | Time-based | No | Temporary shares <1 day |
 | Stored policy SAS | Blob or container | Time-based | Yes | Contractors, partners |
-| RBAC role | Resource group or account | Role removal | Yes | Employees, services (most secure) |
+| RBAC role | Storage account (recommended) or resource group | Role removal | Yes | Employees, services (most secure) |
 
 ## 🔐 Deep dive: Access control confusion points
 
