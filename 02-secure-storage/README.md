@@ -13,7 +13,7 @@ I have been handed a requirement to **secure and manage file storage** for an ap
 
 **✓ Files survive infrastructure failures**
 - Choose redundancy that protects against datacentre or region outages
-- Allow audit access from another region without failover
+- Maintain a backup copy in another region (readable after failover if needed)
 
 **✓ External users access files securely**
 - Contractor needs read-only access to one container
@@ -38,7 +38,7 @@ I have been handed a requirement to **secure and manage file storage** for an ap
 
 ```mermaid
 graph TB
-    ACC["💾 Storage Account<br/>StorageV2 RA-GRS"]
+    ACC["💾 Storage Account<br/>StorageV2 GRS"]
     
     CON["📦 Container<br/>uploads"]
     
@@ -110,9 +110,9 @@ graph LR
 
 - **GRS (Geo-Redundant Storage):** Copies to a paired region automatically, but asynchronously. I can only read the secondary copy **after a failover** (disaster). If region goes down, I trigger failover manually (hours of downtime).
 
-- **RA-GRS (Read-Access GRS):** Same as GRS plus I can read the secondary copy **right now** without any failover. Perfect when an auditor or backup system needs to read a live copy from another region. This is the lab choice.
+- **GZRS (Geo-Zone-Redundant Storage):** Zone resilience inside one region (like ZRS) PLUS a paired-region copy (read-only until failover). Maximum protection but most expensive. Use only for mission-critical data.
 
-- **GZRS / RA-GZRS:** Zone resilience inside one region (like ZRS) PLUS a paired-region copy. Maximum protection but most expensive. Use only for mission-critical data.
+- **RA-GRS / RA-GZRS:** Read-access variants (not available in all regions like Germany West Central). Allow reading secondary copy without failover.
 
 ## ✅ Before I started
 
@@ -206,8 +206,8 @@ Storage policies enforce compliance rules. I create policies similar to project 
 | **ZRS** (Zone-Redundant Storage) | 3 separate datacenters | 0 (No replication) | 3 total copies (1 per datacenter) |
 | **GRS** (Geo-Redundant Storage) | 1 datacenter | 1 datacenter | 6 total copies (LRS primary + LRS secondary) |
 | **GZRS** (Geo-Zone-Redundant Storage) | 3 separate datacenters | 1 datacenter | 6 total copies (ZRS primary + LRS secondary) |
-| **RA-GRS** (Read-Access GRS) | 1 datacenter | 1 datacenter | 6 total copies (readable without failover) |
-| **RA-GZRS** (Read-Access GZRS) | 3 separate datacenters | 1 datacenter | 6 total copies (readable without failover) |
+| **RA-GRS** (Read-Access GRS) | 1 datacenter | 1 datacenter | 6 total copies (readable without failover, not in all regions) |
+| **RA-GZRS** (Read-Access GZRS) | 3 separate datacenters | 1 datacenter | 6 total copies (readable without failover, not in all regions) |
 
 **When to use each option:**
 
@@ -215,20 +215,24 @@ Storage policies enforce compliance rules. I create policies similar to project 
 |--------|-----------|
 | **LRS** | Dev/test, non-critical data, lowest cost, can tolerate datacenter loss |
 | **ZRS** | Needs zone resilience within one region, critical data that stays in-region |
-| **GRS** | Needs region failover protection, can read secondary only after failover |
-| **GZRS** | Maximum protection within region plus paired region backup, most expensive |
-| **RA-GRS** | Auditor needs live secondary copy without failover, need readable backup in paired region |
-| **RA-GZRS** | Maximum protection with readable secondary region, zone resilience primary plus readable backup |
+| **GRS** | Region outage protection, willing to failover manually, secondary not immediately readable |
+| **GZRS** | Zone resilience plus region backup, willing to failover, maximum protection, most expensive |
+| **RA-GRS** | Region outage protection with immediate read access to secondary (not available in all regions) |
+| **RA-GZRS** | Zone resilience plus readable region backup, maximum protection (not available in all regions) |
 
 **For this lab:**
-I select **RA-GRS** because:
-- The auditor needs to read a copy from another region **today**, not after a disaster
-- The **RA-** prefix allows reading the secondary copy without a failover
-- Plain GRS would hide the secondary copy until disaster strikes
+I select **GRS** because:
+- Germany West Central does not support RA-GRS (read-access variant)
+- GRS provides region-level redundancy against datacenter outages
+- Data is replicated to a paired region automatically
+- Secondary region becomes readable only after a manual failover
+- Hot tier (already set) ensures blobs are readable immediately in the primary region
+- Soft delete (already enabled) recovers accidental deletes before you realize they are gone
+- This lab demonstrates the failover concept (even though you will not trigger it)
 
 ![Storage account redundancy options](screenshots/01-storage-account-redundancy.png)
 
-*Choosing RA-GRS during storage account creation.*
+*Choosing GRS during storage account creation.*
 
 ### 📁 Create a container and upload a file
 
@@ -674,9 +678,9 @@ Both fail.
 **Redundancy (memorize these):**
 - **LRS** = one datacenter, cheapest
 - **ZRS** = zone resilient (same region), protects zone failures
-- **GRS** = region failover (read only after disaster)
-- **RA-GRS** = read secondary region now (auditor use case)
-- **RA-** prefix = readable copy without failover
+- **GRS** = region failover (secondary readable only after manual failover)
+- **GZRS** = zone resilience + region failover (maximum protection)
+- **RA-GRS / RA-GZRS** = read-access variants (readable secondary without failover, not in all regions)
 
 **Access methods (know the trade-offs):**
 - Account key: unlimited scope, no expiry, cannot revoke - avoid for external users
