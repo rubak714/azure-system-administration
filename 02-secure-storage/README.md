@@ -501,21 +501,22 @@ Lifecycle rules automatically move blobs to cheaper tiers as they age. This cuts
 2. Select **Lifecycle management** from the left menu
 3. Select **+ Add rule**
 4. Give the rule a name: `archive-old-data`
-5. Set **If** to "Blobs modified more than 30 days ago"
+5. Set **If** to "Blobs modified more than 7 days ago"
 6. Set **Then** to "Move to Cool storage"
 7. Save the rule
 
 **What happens:**
-- All blobs older than 30 days automatically move to Cool tier
+- All blobs older than 7 days automatically move to Cool tier
 - This happens every night - I do not manage it
 
 ### 💰 The storage tiers and costs
 
-| Tier | Access time | Cost | Use case |
-|------|-------------|------|----------|
-| **Hot** | Immediate | Most expensive (~$0.016/GB/month) | Frequent access (active data) |
-| **Cool** | 30-day minimum hold | Cheaper (~$0.008/GB/month, 50% less) | Infrequent access (backups, archives) |
-| **Archive** | Offline, rehydration hours | Cheapest (~$0.002/GB/month, 87% less) | Long-term retention (compliance, 7-year holds) |
+| Tier | Access time | Cost | Minimum hold | Use case |
+|------|-------------|------|--------------|----------|
+| **Hot** | Immediate | Most expensive (~$0.016/GB/month) | None | Frequent access (active data) |
+| **Cool** | Immediate (no rehydration) | Cheaper (~$0.008/GB/month, 50% less) | 30 days | Infrequent access (backups, archives) |
+| **Cold** | Immediate (no rehydration) | Mid-tier (~$0.004/GB/month, 75% less) | 90 days | Rarely accessed (long-term archives) |
+| **Archive** | Offline, rehydration 1-15 hours | Cheapest (~$0.002/GB/month, 87% less) | 180 days | Long-term retention (compliance, 7-year holds) |
 
 **Important detail about Archive:**
 
