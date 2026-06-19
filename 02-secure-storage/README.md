@@ -77,16 +77,16 @@ graph TB
 **Five redundancy patterns:**
 
 ```mermaid
-graph TB
-    LRS["🪑 LRS<br/>One datacenter<br/>3 copies<br/>Cheapest"]
+graph LR
+    LRS["🪑 LRS<br/>─────────<br/>3 copies<br/>1 datacenter<br/>1 region<br/>Cheapest"]
     
-    ZRS["🔢 ZRS<br/>Across zones<br/>Same region<br/>Zone resilient"]
+    ZRS["🔢 ZRS<br/>─────────<br/>3 copies<br/>3 zones<br/>1 region<br/>Zone resilient"]
     
-    GRS["↔️ GRS<br/>Paired region<br/>Read after failover<br/>Async copy"]
+    GRS["↔️ GRS<br/>─────────<br/>3+3 copies<br/>2 datacenters<br/>2 regions<br/>Async replica"]
     
-    RAGRS["↔️🔍 RA-GRS<br/>Paired region<br/>Read anytime<br/>No failover needed"]
+    RAGRS["↔️🔍 RA-GRS<br/>─────────<br/>3+3 copies<br/>2 datacenters<br/>2 regions<br/>Read both"]
     
-    GZRS["🔗 GZRS<br/>Zones + Region<br/>Maximum protection<br/>Most expensive"]
+    GZRS["🔗 GZRS<br/>─────────<br/>3+3 copies<br/>4 datacenters<br/>2 regions<br/>Max protection"]
     
     LRS --> ZRS
     ZRS --> GRS
@@ -99,6 +99,8 @@ graph TB
     style RAGRS fill:#404040,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
     style GZRS fill:#2a2a2a,stroke:#e0e0e0,stroke-width:2px,color:#e0e0e0
 ```
+
+**References:** [Azure Storage redundancy](https://learn.microsoft.com/en-us/azure/storage/common/storage-redundancy)
 
 **Understanding each option:**
 
