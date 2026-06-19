@@ -356,11 +356,13 @@ Storage offers four access methods. Each has different security properties, and 
 - A likely AZ-104 question: "How do I revoke a SAS that is already issued?"
 - Answer: Use a stored access policy. Ad-hoc SAS cannot be revoked.
 
-![Stored access policy on the container](screenshots/06-stored-access-policy.png)
+**→ Troubleshooting:** See [Issues.md - Issue 6: Stored access policy SAS requires blob-level generation](Issues.md#issue-6-stored-access-policy-sas-requires-blob-level-generation) for detailed walkthrough of the correct process and why blob-level generation is required.
+
+![Stored access policy on the container](screenshots/04-stored-access-policy.png)
 
 *A stored access policy on the uploads container.*
 
-![SAS link no longer works](screenshots/07-sas-revoked.png)
+![SAS link no longer works](screenshots/05-sas-revoked.png)
 
 *After deleting the policy, the SAS stops working immediately.*
 
