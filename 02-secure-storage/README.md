@@ -649,6 +649,74 @@ Before you can create a private endpoint, you must have a VNet with at least one
 
 *A private endpoint gives the account a private IP inside a VNet.*
 
+**Link the storage account to the private endpoint:**
+
+1. Go to the storage account
+2. Select **Networking** → **Firewalls and virtual networks**
+3. Under **Private endpoint connections**, you should see `storage-pe` listed
+4. Verify it shows as **Approved** (auto-approved because you own both resources)
+5. Change **Default action** to **Deny** (block public internet)
+6. Check **Allow trusted Microsoft services and system services** (so portal, backup, and monitor work)
+7. Save
+
+**Result:**
+- Private endpoint is now active and approved
+- Storage is reachable **only** via:
+  - Private IP (e.g., 10.0.1.5) from inside the VNet
+  - Trusted Microsoft services (portal, CLI, Monitor, Backup)
+  - **Not** from public internet or on-premises yet (would need VPN/ExpressRoute)
+
+---
+
+### 🌐 Add a service endpoint
+
+Service endpoints are simpler than private endpoints. They restrict the **public** endpoint to only specified VNets - no new IP, no DNS changes, and **free**.
+
+**Prerequisite: You already have a VNet and subnet (from the private endpoint section above)**
+
+**Steps to create a service endpoint on the subnet:**
+
+1. Go to your **Virtual network** (`vnet-storage-lab`)
+2. Select **Subnets** from the left menu
+3. Click on your subnet (`subnet-storage`)
+4. Under **Service endpoints**, select **+ Add** (or the plus icon)
+5. In the dropdown, select **Microsoft.Storage**
+6. Click **Add**
+7. Click **Save**
+
+**What happens:**
+- The subnet now has a service endpoint to Azure Storage
+- Traffic from this subnet uses Microsoft's private backbone
+- The storage account's public endpoint is now aware of this subnet
+
+**Link the storage account to the service endpoint:**
+
+1. Go to your **storage account**
+2. Select **Networking** → **Firewalls and virtual networks**
+3. Under **Allow access from**, ensure it's set to **Selected networks** (not "All networks")
+4. Under **Virtual networks**, click **+ Add existing virtual network**
+5. Select:
+   - **Subscription:** your subscription
+   - **Virtual network:** `vnet-storage-lab`
+   - **Subnet:** `subnet-storage`
+6. Click **Add**
+7. Change **Default action** to **Deny** (block all other traffic)
+8. Check **Allow trusted Microsoft services and system services**
+9. Save
+
+**Result:**
+- Service endpoint is now linked and active
+- Storage is reachable **only** via:
+  - Public endpoint from the VNet subnet (`vnet-storage-lab` → `subnet-storage`)
+  - Trusted Microsoft services (portal, CLI, Monitor)
+  - **Not** from other VNets, your office IP (if not in the subnet), or internet
+
+**How it differs from the private endpoint:**
+- Service endpoint: public IP is restricted to specific VNets (firewall rule)
+- Private endpoint: new private IP created inside the VNet (different connection path)
+
+---
+
 ### 📍 Service endpoint vs private endpoint
 
 These are often confused on the exam. Here is the **key difference**:
