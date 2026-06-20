@@ -594,7 +594,7 @@ Storage accounts are public by default - anyone on the internet can reach them (
 - Random internet user: blocked ✗
 
 ![Storage firewall set to my office IPv4 Address](screenshots/08-firewall-vnet-01.png)
-![Storage firewall set to future resources](screenshots/08-firewall-vnet-02.png)
+![Storage firewall set to future resources](screenshots/09-firewall-vnet-02.png)
 09-firewall-vnet-02.png
 
 *The firewall set to deny by default, then add specific virtual networks.*
