@@ -689,6 +689,10 @@ Service endpoints are simpler than private endpoints. They restrict the **public
 - Traffic from this subnet uses Microsoft's private backbone
 - The storage account's public endpoint is now aware of this subnet
 
+![Service endpoint on the storage account](screenshots/11-service-endpoint.png)
+
+![Linking Storage Account to Service endpoint ](screenshots/12-storage-acc-with-service-endpoint.png)
+
 **Link the storage account to the service endpoint:**
 
 1. Go to your **storage account**
