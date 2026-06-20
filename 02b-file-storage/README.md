@@ -1,6 +1,6 @@
 # 📁 Azure File Storage: Shares and Access (AZ-104, portal-built)
 
-This is the continuation of Lab 02 (02b), focusing on **Azure File Shares**—a managed file sharing service using the SMB protocol. Where Blob Storage is for unstructured data (documents, media), File Storage is for **shared network file access** (similar to on-premises file servers).
+This is the continuation of Lab 02 (02b), focusing on **Azure File Shares** - a managed file sharing service using the SMB protocol. Where Blob Storage is for unstructured data (documents, media), File Storage is for **shared network file access** (similar to on-premises file servers).
 
 **Exam status:** AZ-104 requires understanding blob storage, but file shares appear in real-world scenarios and some exam questions about hybrid cloud and file sharing.
 
@@ -72,13 +72,12 @@ graph TB
 ### 📂 Create the file share
 
 **Steps:**
-1. Open your storage account (from Lab 02: `storagelab121455`, or create a new one)
-2. In the left menu, search for **File shares** (under "Data storage")
-3. Select **+ File share**
-4. Fill in the details:
+1. In the left menu, search for **File shares** (under "Data storage")
+2. Select **+ File share**
+3. Fill in the details:
    - **Name:** `share1`
    - **Tier:** **Transaction optimized** (standard tier, best for general use)
-   - **Quota:** 100 GB (you can adjust based on needs)
+   - **Quota:** 100 GB (adjust based on needs)
 5. On the **Backup** tab: uncheck **Enable backup** (simplifies lab)
 6. Review and create
 
@@ -108,11 +107,11 @@ graph TB
 ### 📤 Upload a file to the share
 
 **Using Storage Browser (GUI):**
-1. Go back to your storage account
+1. Go back to the storage account
 2. Select **Storage browser** from the left menu
 3. Expand **File shares** and click on **share1**
 4. Select **Upload**
-5. Choose a file from your computer
+5. Choose a file from my computer
 6. Click **Upload**
 
 **Result:**
@@ -124,8 +123,8 @@ graph TB
 *Storage Browser lets you quickly upload files to file shares.*
 
 **Important note about Storage Browser:**
-- If you see an authorization error, select **Switch Azure AD Account** in the toolbar
-- This ensures you're authenticated with the right identity
+- If I see an authorization error, select **Switch Azure AD Account** in the toolbar
+- This ensures I am authenticated with the right identity
 
 ## 🔐 Phase 2 - Access methods for file shares
 
@@ -134,7 +133,7 @@ File shares support multiple access patterns, similar to Blob Storage but optimi
 ### 1️⃣ Storage account key (full access)
 
 **How it works:**
-1. Open your storage account
+1. Open the storage account
 2. Select **Access keys**
 3. Copy the connection string or storage account key
 4. Use it to mount the file share on a machine
@@ -166,13 +165,13 @@ net use Z: \\storagelab121455.file.core.windows.net\share1 /user:Azure\storagela
 3. Select **+ Add role assignment**
 4. Choose role (e.g., Storage File Data SMB Share Reader)
 5. Assign to user or group
-6. The user can now mount the share using their Azure AD credentials
+3. The user can now mount the share using Azure AD credentials
 
 **Mounting with Azure AD (Windows 10+, Azure AD joined):**
 ```
 net use Z: \\storagelab121455.file.core.windows.net\share1
 ```
-(No password needed—uses Azure AD sign-in)
+(No password needed - uses Azure AD sign-in)
 
 **Why this is more secure:**
 - No credential sharing
@@ -203,14 +202,14 @@ Both must allow access for a user to read a file.
 1. Open Command Prompt (admin) or PowerShell
 2. Run this command:
    ```
-   net use Z: \\storagelab121455.file.core.windows.net\share1 /user:Azure\storagelab121455 <your-storage-key>
+   net use Z: \\storagelab121455.file.core.windows.net\share1 /user:Azure\storagelab121455 <storage-key>
    ```
    Replace:
-   - `storagelab121455` with your storage account name
-   - `<your-storage-key>` with the key from Access keys
+   - `storagelab121455` with the storage account name
+   - `<storage-key>` with the key from Access keys
 
 3. Press Enter
-4. Check File Explorer → Z: drive should appear
+4. Check File Explorer - Z: drive should appear
 
 **Result:**
 - The file share is now mounted as a Z: drive
@@ -237,7 +236,7 @@ Both must allow access for a user to read a file.
 
 3. Mount the share:
    ```bash
-   sudo mount -t cifs //storagelab121455.file.core.windows.net/share1 /mnt/azure -o username=storagelab121455,password=<your-storage-key>,vers=3.0
+   sudo mount -t cifs //storagelab121455.file.core.windows.net/share1 /mnt/azure -o username=storagelab121455,password=<storage-key>,vers=3.0
    ```
 
 4. Verify the mount:
@@ -281,17 +280,17 @@ Both must allow access for a user to read a file.
 ## 🔐 Deep dive: Storage account key vs RBAC
 
 **Storage account key (connection-level auth):**
-- You provide the key to every machine/user that needs access
+- I provide the key to every machine/user that needs access
 - Key works for everything: files, blobs, tables, queues
 - Cannot be audited per-user (just "someone with the key" accessed it)
-- If leaked, you must rotate it (affects all users)
+- If leaked, rotate it (affects all users)
 - Use for: applications, automated scripts
 
 **RBAC role (identity-level auth):**
-- User authenticates with Azure AD (their username/password)
+- User authenticates with Azure AD (username and password)
 - Role restricts what they can do (read-only, read/write, etc.)
 - Every action is audited with the user's identity
-- If compromised, just remove the role (doesn't affect others)
+- If compromised, remove the role (does not affect others)
 - Use for: employees, on-premises servers via VPN (Azure AD hybrid)
 
 **Production recommendation:**
@@ -358,12 +357,12 @@ Fix:
 
 ## 🏭 If this were production, not a lab
 
-**What I would do differently:**
+**What I will do differently:**
 
 **Access:**
 - Disable storage account key access entirely (set keys to read-only, use RBAC)
 - Use managed identities for applications
-- Assign RBAC roles to Azure AD groups (not individuals)
+- Assign RBAC roles to Azure AD groups (avoid individuals)
 
 **Resilience:**
 - Use RA-GZRS redundancy (readable paired region)
