@@ -601,6 +601,8 @@ Storage accounts are public by default - anyone on the internet can reach them (
 
 ### 🔒 Add a private endpoint
 
+**Note:** Before creating a private endpoint, review [POLICY-GOVERNANCE.md](POLICY-GOVERNANCE.md) if you encounter a `RequestDisallowedByPolicy` error. This explains why private endpoints may fail in `rg-storage-lab` and the recommended solution.
+
 Private endpoints give the storage account a **private IP** inside a VNet. This is different from restricting the public endpoint.
 
 **Prerequisite: Create a Virtual Network (VNet) and Subnet**
@@ -612,7 +614,7 @@ Before you can create a private endpoint, you must have a VNet with at least one
 2. Select **Create**
 3. Fill in basics:
    - **Subscription:** your subscription
-   - **Resource group:** `rg-storage-lab`
+   - **Resource group:** `rg-network-lab` (create a new RG for networking, separate from `rg-storage-lab`)
    - **Name:** `vnet-storage-lab` (or your preferred name)
 4. Set **Address space** to `10.0.0.0/16` (standard /16 for labs)
 5. On the **Subnets** tab, create a subnet:
