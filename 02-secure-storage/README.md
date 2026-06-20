@@ -595,7 +595,7 @@ Storage accounts are public by default - anyone on the internet can reach them (
 
 ![Storage firewall set to my office IPv4 Address](screenshots/08-firewall-vnet-01.png)
 ![Storage firewall set to future resources](screenshots/09-firewall-vnet-02.png)
-09-firewall-vnet-02.png
+
 
 *The firewall set to deny by default, then add specific virtual networks.*
 
@@ -645,7 +645,7 @@ Before you can create a private endpoint, you must have a VNet with at least one
 - The public endpoint still exists but is firewalled
 - Applications in my VNet reach storage via the private IP
 
-![Private endpoint on the storage account](screenshots/11-private-endpoint.png)
+![Private endpoint on the storage account](screenshots/10-private-endpoint.png)
 
 *A private endpoint gives the account a private IP inside a VNet.*
 
