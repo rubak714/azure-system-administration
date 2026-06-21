@@ -1,247 +1,286 @@
 # 🧯 SAS Token Issues and Troubleshooting Guide
 
-This document details all issues encountered during SAS token configuration and how to fix them.
+Issues encountered during SAS token configuration and access control.
 
-## Overview
+## 📍 Overview
 
-During the SAS token generation process, several interdependent settings must be configured correctly. Here's what went wrong and how each issue was fixed:
+SAS token generation has **5 interdependent settings** that must align:
 
----
+1. ✓ Container access level
+2. ✓ Storage account key access  
+3. ✓ Microsoft Entra authorization
+4. ✓ RBAC role assignment
+5. ✓ SAS token scope (blob vs container)
 
-## Issue 1: Container access level was disabled
-
-**Error:** "Anonymous access to this container is being blocked"
-
-**Root cause:**
-- The container access level was set to **Disabled** (no public access)
-- Even with a valid SAS token, Azure blocks access if the container forbids it
-
-**What was changed:**
-- Container access level: **Disabled** → **Blob** (anonymous read access for blobs only)
-
-**Where to fix:**
-1. Open the storage account
-2. Select **Containers** > select the container (`uploads`)
-3. Select **Change access level**
-4. Set **Anonymous access level** to **Blob (anonymous read access for blobs only)**
-5. Select **OK**
-
-**Why this is needed:**
-- The container needs to allow blob-level access, even when you're using SAS tokens
-- This setting works independently from SAS tokens - both must allow access
+If one fails, access fails with cryptic errors.
 
 ---
 
-## Issue 2: Storage account key access was disabled
+## ❌ Issue 1: Container Access Blocked
 
-**Error:** "KeyBasedAuthenticationNotPermitted" when trying to generate SAS token
+### Error
+```
+Anonymous access to this container is being blocked
+```
 
-**Root cause:**
-- The storage account had "Allow storage account key access" disabled
-- SAS token generation requires access to storage account keys to sign the token
-- Without this enabled, the portal cannot generate a valid SAS
+### 🔍 Root Cause
+Container access level is **Disabled** (no public access)  
+Even with valid SAS token, Azure blocks access
 
-**What was changed:**
-- Storage account key access: **Disabled** → **Enabled**
+### ✅ Solution
 
-**Where to fix:**
-1. Open the storage account
-2. Select **Configuration** from the left menu
-3. Look for **Allow storage account key access**
-4. Set the toggle to **Enabled**
-5. Select **Save**
+1. Storage account → **Containers**
+2. Select container (`uploads`)
+3. **Change access level**
+4. Set to: **Blob** (anonymous read for blobs only)
+5. **OK**
 
-**Why this is needed:**
-- The storage account key is used cryptographically to sign and validate SAS tokens
-- This is a deliberate security control - organizations can disable keys if they use only RBAC and managed identity
-- For this lab, we need it enabled to demonstrate SAS token generation
-
-**Note:** This is different from the container access level. Both must be enabled for SAS tokens to work.
+### 💡 Key Point
+**Container access level is independent from SAS tokens**  
+Both must allow access - SAS token + container access level must align
 
 ---
 
-## Issue 3: User lacked Storage Blob Data Reader RBAC role
+## 🔐 Issue 2: Storage Account Key Access Disabled
 
-**Error:** "You do not have permissions to list the data using your user account with Microsoft Entra ID"
+### Error
+```
+KeyBasedAuthenticationNotPermitted when trying to generate SAS token
+```
 
-**Root cause:**
-- The user had no **data-plane** RBAC role
-- Control-plane roles (Owner, Contributor) do NOT grant blob read access
-- Data-plane roles (Storage Blob Data Reader, Storage Blob Data Contributor) are required separately
+### 🔍 Root Cause
+Storage account setting: **"Allow storage account key access"** = OFF  
+SAS token generation requires keys to sign tokens cryptographically
 
-**What was changed:**
-- Assigned **Storage Blob Data Reader** RBAC role to the user account
+### ✅ Solution
 
-**Where to fix:**
-1. Open the storage account
-2. Select **Access Control (IAM)** from the left menu
-3. Select **+ Add** > **Add role assignment**
-4. On the **Role** tab, search for and select **Storage Blob Data Reader**
-5. On the **Members** tab, select **+ Select members**
-6. Find and select your user account
-7. Select **Review + assign**
+1. Storage account → **Configuration**
+2. Find: **Allow storage account key access**
+3. Toggle: **Enabled**
+4. **Save**
 
-**Why this is needed:**
-- Azure Storage separates **control-plane** (managing the account) from **data-plane** (reading blob data)
-- Even if you're the Owner of the subscription, you cannot read blobs without a data-plane role
-- Storage Blob Data Reader is the appropriate role for read-only access
+### ⚠️ Important
+This is different from container access level  
+**Both must be enabled** for SAS tokens to work
 
-**Why Microsoft Entra authorization in the portal must be enabled:**
-- The portal uses your Azure AD identity to check your RBAC roles
-- Without "Default to Microsoft Entra authorization in the Azure portal" enabled, the portal cannot verify that you have Storage Blob Data Reader
-- This is a security feature: the portal defaults to using your signed-in user credentials, not account keys
+### 💡 Security Note
+Organizations can disable this entirely and use RBAC + managed identity instead  
+For this lab, enable it to demonstrate SAS token generation
 
 ---
 
-## Issue 4: SAS token generated from container instead of blob
+## 👤 Issue 3: User Missing Data-Plane Role
 
-**Error:** "Value for one of the query parameters specified in the request URI is invalid (comp parameter empty)"
+### Error
+```
+Permissions cannot be verified using account with Microsoft Entra ID
+```
 
-**Root cause:**
-- The SAS token was generated from the **container level** instead of the **blob level**
-- Container-level SAS tokens do not include the specific blob path in the URL
-- The Azure Storage service cannot identify which blob to serve
+### 🔍 Root Cause
+User lacks **data-plane RBAC role**
 
-**What was changed:**
-- Regenerated SAS token directly from the **specific blob** (not the container)
+- Subscription **Owner** ✗ does NOT grant blob read access
+- Subscription roles are **control-plane** (manage account)
+- Blob access requires **data-plane** roles (read/write data)
 
-**Correct process:**
-1. Open the storage account
-2. Select **Containers** > select the container (`uploads`)
-3. **Right-click the specific blob** (`abcd.txt`) 
-4. Select **Generate SAS**
-5. Set **Permissions** to read-only
-6. Set **Expiry** (e.g., 24 hours from now)
-7. Select **Generate SAS URL and token**
-8. Copy the **SAS URL** (the full URL including path and token)
+### ✅ Solution
 
-**Why this is needed:**
-- Blob-level SAS tokens produce a URL like: `https://storagelab121455.blob.core.windows.net/uploads/abcd.txt?sv=2026-02-06&...`
-- Container-level SAS tokens produce: `https://storagelab121455.blob.core.windows.net/uploads?sv=2026-02-06&...` (missing the blob name)
-- The full path (including `/uploads/abcd.txt`) tells Azure Storage exactly which blob to return
+1. Storage account → **Access Control (IAM)**
+2. **+ Add role assignment**
+3. Role tab: **Storage Blob Data Reader**
+4. Members tab: Select user account
+5. **Review + assign**
 
-**Key difference:**
+### 📊 Role Types
 
-| Level | URL Pattern | Use case |
-|-------|-------------|----------|
-| Container | `/uploads?sv=2026...` | Listing all blobs in container |
-| Blob | `/uploads/abcd.txt?sv=2026...` | Accessing a specific blob ✓ Correct for read access |
+| Type | What it controls | Example |
+|------|-----------------|---------|
+| **Control-plane** | Manage account settings | Owner, Contributor |
+| **Data-plane** | Read/write blob data | Storage Blob Data Reader |
+
+**Key insight:** Separate access models - must assign BOTH if needed
 
 ---
 
-## Issue 5: White/blank page when accessing blob via SAS URL
+## 📍 Issue 4: SAS Generated From Container, Not Blob
 
-**Observation:** SAS URL works (no 403 Forbidden error) but shows a blank white page in the browser
+### Error
+```
+Value for one of the query parameters specified 
+in the request URI is invalid (comp parameter empty)
+```
 
-**Is this an error?**
-- **No.** This is expected behavior for plain text files.
+### 🔍 Root Cause
+SAS generated at **container level** instead of **blob level**
 
-**What's happening:**
-- ✓ The SAS token authenticated successfully
-- ✓ Azure is serving the blob content
-- ✓ The browser receives the text file
-- The browser renders plain text as a blank page (no HTML formatting)
+- Container-level SAS: Missing blob path ✗
+- Blob-level SAS: Includes blob path ✓
 
-**Verification that it works:**
-1. Right-click the SAS URL in the browser
-2. Select **Save As**
-3. Download the blob to your computer
-4. Open the downloaded file locally
-5. If you see the content, the SAS token is fully functional
+### ✅ Correct Process
 
-**To see content displayed in the browser:**
-- Upload a text file with visible content (e.g., "Hello World") instead of `abcd.txt`
-- Or upload an image or PDF (visible content types)
-- Or add Content-Type headers to serve as `text/html` or `text/plain with formatting`
+```
+Storage account → Containers → uploads
+  ↓
+RIGHT-CLICK specific blob (abcd.txt)
+  ↓
+Generate SAS
+  ↓
+Permissions: Read ✓
+Expiry: 24 hours ✓
+Generate SAS URL
+  ↓
+Copy FULL URL with path + token
+```
 
-**Summary for this issue:**
-White page = ✅ Success. The SAS token is working. The blank appearance is just how browsers render plain text files without formatting.
+### 🔍 URL Comparison
 
----
+**Container-level (❌ WRONG):**
+```
+https://storage.blob.core.windows.net/uploads?sv=2026...
+```
 
-## Issue 6: Stored access policy SAS requires blob-level generation
+**Blob-level (✅ CORRECT):**
+```
+https://storage.blob.core.windows.net/uploads/abcd.txt?sv=2026...
+```
 
-**Error:** "AuthenticationFailed" - "Signature did not match. String to sign used was /blob/storagelab121455/$root contractor-read..."
-
-**Root cause:**
-- When generating a SAS from a stored access policy, the policy must be generated from the **blob level**, not the container level
-- Generating from container level creates a policy reference that doesn't match the blob path
-- The signature validation fails because the Azure Storage service expects a blob path but the policy was created at container scope
-
-**What was changed:**
-- Deleted the policy created at container level
-- Recreated the workflow: click on **specific blob** (abcd.txt) > **Generate SAS** > select the policy
-
-**Correct process for stored policy SAS:**
-
-**Step 1: Create the policy (on container)**
-1. Open storage account > **Containers** > select `uploads`
-2. Select **Access policy** tab
-3. Select **+ Add policy**
-4. Name: `contractor-read`
-5. Permissions: check **Read**
-6. Expiry: set to tomorrow (or desired date)
-7. Click **OK**
-
-**Step 2: Generate the SAS (from blob, not container)**
-1. Still in the same container, find your blob (`abcd.txt`)
-2. **Right-click the blob** and select **Generate SAS**
-3. A dialog appears with options
-4. Select your policy name from the dropdown (e.g., `contractor-read`)
-5. Click **Generate** or **Generate SAS URL and token**
-6. Copy the **SAS URL** and test it
-
-**Why this works:**
-- The policy exists at the container level (this is correct)
-- But the SAS token is generated at the blob level (this is required)
-- The blob-level generation creates a URL that includes the full blob path: `/uploads/abcd.txt?sv=...`
-- This path allows the signature to validate correctly against the policy
-
-**Why the error occurred:**
-- Generating the SAS from the **container** (not the blob) skips the blob path
-- The resulting URL was `/uploads?sv=...` (missing the blob name)
-- The signature validation failed because the storage service expected `/uploads/abcd.txt` but got `/uploads` instead
-
-**Key takeaway:**
-Even though the policy is stored at the **container level**, you must generate the SAS token from the **blob level** to include the blob path in the resulting URL. Both policy creation (container) and SAS generation (blob) are required.
+**The difference:** Blob path must be included in URL
 
 ---
 
-## Summary table: All settings that must be enabled
+## 🖥️ Issue 5: Blank White Page in Browser
 
-| Setting | Location | Default | Lab Setting | Why it matters |
-|---------|----------|---------|-------------|----------------|
-| **Container access level** | Container > Access level | Disabled | Blob | Controls who can access blobs in the container |
-| **Storage account key access** | Storage account > Configuration | Enabled (typical) | Enabled | Required to generate SAS tokens |
-| **Microsoft Entra in portal** | Storage account > Configuration | Enabled (typical) | Enabled | Portal uses your Azure AD identity to check RBAC roles |
-| **Storage Blob Data Reader role** | Storage account > IAM | (None by default) | Assigned to user | Grants data-plane permission to read blobs |
-| **SAS token scope** | (N/A) | (N/A) | Blob level | Token must point to specific blob, not just container |
+### Observation
+SAS URL works (no 403) but shows blank page
+
+### ❓ Is This an Error?
+**No!** This is expected behavior for plain text files
+
+### ✓ What's Happening
+- ✓ SAS token authenticated successfully
+- ✓ Azure serving blob content
+- ✓ Browser received text file
+- ✗ Browser renders plain text as blank page (no formatting)
+
+### ✅ Verification
+
+1. Right-click SAS URL
+2. **Save As**
+3. Download blob to computer
+4. Open locally
+5. If content is visible → SAS token works! ✓
+
+### 🎯 To See Content in Browser
+- Upload text file with visible content ("Hello World" vs empty `abcd.txt`)
+- Upload image or PDF (visual content types)
+- Add proper Content-Type headers
+
+**Bottom line:** White page = Success ✓
 
 ---
 
-## Why these settings are interdependent
+## 🔑 Issue 6: Stored Access Policy SAS Fails
 
-All five settings must align for SAS token access to work:
+### Error
+```
+AuthenticationFailed: "Signature did not match. 
+String to sign used was /blob/storagelab121455/$root 
+contractor-read..."
+```
 
-1. **Container must allow blob access** (access level = Blob)
-2. **Account must allow key-based SAS** (key access = Enabled)
-3. **Portal must know your RBAC role** (Entra auth = Enabled)
-4. **User must have blob read permission** (RBAC = Storage Blob Data Reader)
-5. **SAS token must point to the blob** (not just container)
+### 🔍 Root Cause
+Policy generated at **container level** (correct)  
+BUT SAS token generated at **container level** (wrong!)
 
-If even one is misconfigured, access fails with a cryptic error message. This is why troubleshooting SAS issues requires checking all five points.
+**Both levels required:**
+- Policy must exist → container level ✓
+- SAS token must be generated → blob level ✓
+
+### ✅ Correct Two-Step Process
+
+**STEP 1: Create policy (container level)**
+
+```
+Containers → uploads → Access policy tab
+  ↓
++ Add policy
+  ↓
+Name: contractor-read
+Permissions: Read ✓
+Expiry: Tomorrow ✓
+OK
+```
+
+**STEP 2: Generate SAS (blob level)**
+
+```
+Containers → uploads → Find blob (abcd.txt)
+  ↓
+RIGHT-CLICK blob
+  ↓
+Generate SAS
+  ↓
+Select policy: contractor-read ✓
+Generate SAS URL
+  ↓
+Copy FULL URL (includes /uploads/abcd.txt)
+```
+
+### 💡 Why This Works
+
+| Step | Level | Purpose |
+|------|-------|---------|
+| **Create policy** | Container | Establish permissions & expiry |
+| **Generate SAS** | Blob | Create URL with blob path |
+
+Policy at container + SAS at blob = correct signature ✓
+
+### ❌ Why It Failed Before
+Generated SAS at **container level** = URL missing blob path  
+Signature validation failed because path didn't match
+
+**Key takeaway:**  
+Policy created at **container**, SAS generated from **specific blob**
 
 ---
 
-## Quick reference checklist
+## 📋 Settings Checklist
 
-Before testing a SAS token, verify all of these are configured:
+### All Five Must Be Enabled
 
-- [ ] Container access level = **Blob** (or appropriate public access level)
-- [ ] Storage account key access = **Enabled**
-- [ ] Microsoft Entra authorization in portal = **Enabled**
-- [ ] User has **Storage Blob Data Reader** RBAC role assigned
-- [ ] SAS token generated from **specific blob**, not container
-- [ ] SAS token has **read** permission (at minimum)
-- [ ] SAS token expiry is set to future date/time
-- [ ] URL includes full path: `/container/blobname?sv=...`
+| Setting | Location | Value | Lab Status |
+|---------|----------|-------|-----------|
+| **Container access** | Container → Access level | Blob | ✓ |
+| **Account key access** | Config → Key access | Enabled | ✓ |
+| **Entra ID in portal** | Config → Auth method | Enabled | ✓ |
+| **RBAC role** | IAM → Role assignment | Blob Data Reader | ✓ |
+| **SAS scope** | (generated from) | Blob (not container) | ✓ |
+
+### Testing Checklist
+
+Before testing SAS token, verify:
+
+- [ ] Container access level = **Blob**
+- [ ] Account key access = **Enabled**
+- [ ] Entra ID auth = **Enabled**
+- [ ] RBAC role assigned: **Storage Blob Data Reader**
+- [ ] SAS generated from **specific blob**
+- [ ] Permissions = **Read** (minimum)
+- [ ] Expiry = Future date/time
+- [ ] URL includes path: `/container/blobname?sv=...`
+
+---
+
+## 🎯 Key Takeaways
+
+✓ Container access level + SAS token both must allow access  
+✓ Control-plane roles ≠ Data-plane roles (assign separately)  
+✓ SAS must be generated from **blob**, not container  
+✓ Blank page = success (browser rendering issue)  
+✓ Policy created at container, SAS generated from blob  
+✓ All 5 settings must align for access to work
+
+---
+
+*Documentation of issues encountered in 02 Secure Storage lab.  
+All issues identified and resolved. See README.md for complete lab guide.*
