@@ -159,6 +159,8 @@ net use Z: \\storagelab121455.file.core.windows.net\share1 /user:Azure\storagela
 - **Storage File Data SMB Share Contributor** - read/write access via SMB
 - **Storage File Data SMB Share Elevated Contributor** - read/write + modify permissions
 
+![RBAC Role Assignments](screenshots/03-role-assignments.png)
+
 **How to assign (Azure AD):**
 1. Open the storage account
 2. Select **Access control (IAM)**
@@ -188,6 +190,8 @@ After mounting a file share, you can set **directory and file permissions** just
 3. Set NTFS permissions (Read, Modify, Full Control)
 4. Different users get different folder access
 
+![NTFS Permission Window](screenshots/05-ntfs-permissions.png)
+
 **Two-layer security:**
 - **Layer 1:** SMB authentication (storage account key or RBAC role)
 - **Layer 2:** NTFS permissions (folder and file level)
@@ -215,6 +219,8 @@ Both must allow access for a user to read a file.
 - The file share is now mounted as a Z: drive
 - Appears like a local network drive
 - Can access files with UNC path: `\\storagelab121455.file.core.windows.net\share1`
+
+![Mounted](screenshots/04-mounted-file-share.png)
 
 **Troubleshooting net use:**
 - Error 67 "The network name cannot be found" → Check storage account name spelling
@@ -297,6 +303,16 @@ Both must allow access for a user to read a file.
 - Use RBAC roles for user access
 - Use managed identities for application access (beyond scope of this lab)
 - Rotate storage account keys quarterly as emergency backup
+
+## 📋 Common Issues and Solutions
+
+For detailed troubleshooting of real-world issues encountered during file share setup, including firewall configurations, authentication problems, and access control challenges, see the **[Issues and Troubleshooting Guide](Issues.md)**.
+
+This guide covers:
+- File share upload authorization failures
+- RBAC role propagation delays
+- Firewall blocking and network access issues
+- Storage account key authentication workarounds
 
 ## 🧯 Break it and fix it
 
