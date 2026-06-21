@@ -25,7 +25,7 @@ Anonymous access to this container is being blocked
 
 ### 🔍 Root Cause
 Container access level is **Disabled** (no public access)  
-Even with valid SAS token, Azure blocks access
+Even with valid SAS token, Azure blocked my access
 
 ### ✅ Solution
 
@@ -49,8 +49,9 @@ KeyBasedAuthenticationNotPermitted when trying to generate SAS token
 ```
 
 ### 🔍 Root Cause
-Storage account setting: **"Allow storage account key access"** = OFF  
-SAS token generation requires keys to sign tokens cryptographically
+- Storage account setting: **"Allow storage account key access"** = OFF  
+- SAS token generation requires keys to sign tokens cryptographically
+- I couldn't generate SAS tokens without this enabled
 
 ### ✅ Solution
 
@@ -77,7 +78,7 @@ Permissions cannot be verified using account with Microsoft Entra ID
 ```
 
 ### 🔍 Root Cause
-User lacks **data-plane RBAC role**
+I lacked **data-plane RBAC role**
 
 - Subscription **Owner** ✗ does NOT grant blob read access
 - Subscription roles are **control-plane** (manage account)
@@ -111,7 +112,7 @@ in the request URI is invalid (comp parameter empty)
 ```
 
 ### 🔍 Root Cause
-SAS generated at **container level** instead of **blob level**
+SAS was generated at **container level** instead of **blob level**
 
 - Container-level SAS: Missing blob path ✗
 - Blob-level SAS: Includes blob path ✓
@@ -189,8 +190,8 @@ contractor-read..."
 ```
 
 ### 🔍 Root Cause
-Policy generated at **container level** (correct)  
-BUT SAS token generated at **container level** (wrong!)
+Policy was generated at **container level** (correct)  
+BUT SAS token was generated at **container level** (wrong!)
 
 **Both levels required:**
 - Policy must exist → container level ✓

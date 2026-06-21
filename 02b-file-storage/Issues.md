@@ -1,257 +1,310 @@
 # 🧯 File Share Access Issues and Troubleshooting Guide
 
-This document details all issues encountered during file share creation and access configuration, and how to fix them.
+This document details issues encountered during file share creation and access configuration.
 
-## Overview
+## 📍 Overview
 
-During the file share setup and access configuration process, several interdependent factors must align correctly. Authentication methods (RBAC vs storage account keys), firewall rules, and permission propagation timing caused multiple issues. Here's what went wrong and how each issue was fixed:
+Several interdependent factors must align correctly:
+- ✓ Authentication methods (RBAC vs storage account keys)
+- ✓ Firewall rules and network access
+- ✓ Permission propagation timing
+- ✓ NTFS-level permissions
 
 ---
 
-## Issue 1: File share upload failed with "This request is not authorized to perform this operation"
+## ❌ Issue 1: Upload failed - "Not Authorized"
 
-**Error:** 
+### Error Message
 ```
 Failed to upload 1 out of 1 file(s):
 abcd.txt: This request is not authorized to perform this operation.
 RequestId:392b767e-201a-0021-7fb0-0180df000000
 ```
 
-**Root cause:**
-- User attempted to upload via Storage Browser using Azure AD (Entra ID) credentials
-- While the user had assigned RBAC role (**Storage File Data SMB Share Contributor**), the upload still failed
-- The actual issue was a **firewall rule blocking access** before the RBAC role was even evaluated
-- Storage account firewall was set to **Selected networks**, and user's IP was not in the exception list
+### 🔍 Root Cause
+**Firewall blocked access BEFORE identity was checked**
 
-**What was changed:**
-- Added user's IP address (`37.111.194.103`) to the firewall exceptions
-- User then switched from Azure AD authentication to **Storage Account Key** authentication in Storage Browser
+- I had valid RBAC role: **Storage File Data SMB Share Contributor** ✓
+- Storage account firewall was set to **Selected networks**
+- My IP (`37.111.194.103`) was NOT in the exceptions list ✗
+- Firewall rejection happens **before** Azure AD authentication
 
-**Where to fix:**
-1. Open the storage account
-2. Select **Networking** from the left menu
-3. Look for **Firewalls and virtual networks**
-4. If set to **Selected networks**, add your client IP:
-   - Click **+ Add your client IP address**
-   - Or manually enter your IP in the allowed range
+### ✅ Solution
+
+**Add IP to firewall exceptions:**
+
+1. Storage account → **Networking**
+2. Find **Firewalls and virtual networks**
+3. Click **+ Add client IP address**
+4. Or manually enter IP in CIDR format (e.g., `37.111.194.103/32`)
 5. Select **Save**
-6. Alternatively, change **Public endpoint connectivity** to **All networks** (less secure, only for testing)
 
-**Why this happened:**
-- Azure Storage firewall is evaluated **before** identity and RBAC roles
-- If the firewall blocks your IP, authentication is never checked
-- The error message said "not authorized," but the real issue was network access, not permissions
+**Alternative (testing only):**
+- Change **Public endpoint connectivity** to **All networks**
+- ⚠️ Less secure - revert to "Selected networks" for production
 
-**Why Storage Account Key worked:**
-- Storage Account Key uses a different authentication path that was properly configured
-- The firewall exception + storage key combination bypassed the Entra ID propagation delay
+### 💡 Key Insight
+
+**Firewall evaluation order:**
+```
+Network Layer (Firewall) → ID & RBAC → Data Access
+       ↓
+    If blocked here, RBAC
+    is never even checked!
+```
+
+**Why storage key worked:** Likely used alternate authentication path that bypassed initial Entra ID check
 
 ---
 
-## Issue 2: Azure AD RBAC role assignment didn't grant immediate access
+## ⏳ Issue 2: RBAC Role Not Active - Access Denied
 
-**Error:** 
+### Error Message
 ```
-You do not have permissions to list the data using your user account with Microsoft Entra ID. 
-Click to learn more about authenticating with Microsoft Entra ID. 
-This request is not authorized to perform this operation using this permission.
-RequestId:b6f32560-601a-000f-7eb2-01d2c8000000
-Time:2026-06-21T19:15:32.8409115Z
+Permissions cannot be verified using account with Microsoft Entra ID.
+
+This request is not authorized to perform this operation.
+RequestId: b6f32560-601a-000f-7eb2-01d2c8000000
 ```
 
-**Root cause:**
-- User assigned **Storage File Data SMB Share Contributor** RBAC role to their account
-- Immediately tried to authenticate via Storage Browser using Azure AD credentials
-- RBAC role assignment has a **propagation delay** of 5-15 minutes across Azure services
-- Storage Browser checked permissions before the role was fully replicated to the Storage service
+### 🔍 Root Cause
+**RBAC role assignment has propagation delay**
 
-**What was changed:**
-- Waited 5-15 minutes for RBAC role propagation to complete
-- User switched to **Storage Account Key** authentication as a workaround (bypasses Entra ID entirely)
+- I assigned the role: **Storage File Data SMB Share Contributor** ✓
+- I tried to authenticate immediately ✗
+- Azure AD role changes take **5-15 minutes** to replicate globally
+- Storage service hadn't received my updated role yet
 
-**Where to fix:**
-1. Open the storage account
-2. Select **Access Control (IAM)**
-3. Select **+ Add role assignment**
-4. Choose role: **Storage File Data SMB Share Contributor** (for read/write file share access)
-5. Assign to: Your user account
-6. Select **Review + assign**
-7. **Wait 5-15 minutes** before attempting authentication with Azure AD credentials
-8. If timeout continues, use Storage Account Key as temporary workaround
+### ✅ Solution
 
-**Why this is needed:**
-- RBAC assignments are distributed across Azure's global infrastructure
-- Storage Blob Data roles must sync to the Storage service before the role takes effect
-- During this propagation window, authentication attempts will fail
+**Step 1: Assign the role**
+- Storage account → **Access Control (IAM)**
+- **+ Add role assignment**
+- Role: **Storage File Data SMB Share Contributor** (read/write)
+- Members: Selected my user account
 
-**Best practice:**
-- For production, assign RBAC roles to **Azure AD groups** (not individual users) to reduce propagation issues
-- Plan ahead and assign roles before users need immediate access
-- Use Storage Account Key for critical time-sensitive operations, then migrate to RBAC once role is active
+**Step 2: Wait for propagation** ⏱️
+- **5-15 minutes** minimum
+- Check back with Azure AD credentials after waiting
+
+**Step 3: If still failing, use Storage Key as workaround**
+- Access account keys as temporary authentication
+- Migrate to RBAC once role is active
+
+### 💡 Best Practices
+- Assign RBAC roles to **Azure AD groups** (faster propagation than individuals)
+- Plan ahead - don't expect immediate access
+- Use Storage Key only for emergency/time-critical access
 
 ---
 
-## Issue 3: Firewall blocking Azure AD authentication but not storage key
+## 🔓 Issue 3: Firewall Blocks Azure AD But Not Storage Key
 
-**Error:** 
+### Symptoms
+- Azure AD authentication ✗ fails
+- Storage Account Key ✓ works
+
+### Error
 ```
-This storage account's 'Firewalls and virtual networks' settings may be blocking access 
-to storage services. Try adding your client IP address ('37.111.194.103') to the firewall 
-exceptions, or by allowing access from 'all networks' instead of 'selected networks'.
+This storage account's 'Firewalls and virtual networks'
+settings may be blocking access. Try adding IP address
+('37.111.194.103') to the firewall exceptions.
 ```
 
-**Root cause:**
-- Storage account firewall was set to **Selected networks** with no IP exceptions
-- Different authentication methods route through different network endpoints
-- Azure AD authentication to Storage Browser was blocked by firewall **before** RBAC role was checked
-- Storage Account Key might be using a different authentication path that was partially accessible
+### 🔍 Root Cause
+**Different auth paths hit different endpoints**
 
-**What was changed:**
-- Added user's client IP (`37.111.194.103`) to firewall exceptions
-- Changed authentication method from **Azure AD** to **Storage Account Key** in Storage Browser
+- Storage account firewall: **Selected networks**
+- Azure AD auth attempts: Blocked at firewall layer
+- Storage Key auth: May route through alternate path
+- **Firewall check happens BEFORE auth method is evaluated**
 
-**Where to fix:**
-1. Open the storage account
-2. Select **Networking** from the left menu
-3. Check **Firewalls and virtual networks**
-4. If **Public endpoint connectivity** is set to **Selected networks**:
-   - Click **+ Add your client IP address**
-   - This automatically detects and adds your current IP
-   - Or manually enter your IP in CIDR format (e.g., `37.111.194.103/32`)
-5. Select **Save**
-6. Wait a few minutes for firewall rules to apply
+### ✅ Solution
 
-**Alternative approach (for testing only):**
-1. Change **Public endpoint connectivity** to **All networks**
-2. This disables the firewall entirely (less secure)
-3. Only for testing; revert to "Selected networks" with explicit IPs for production
+**Add IP to exceptions:**
 
-**Why this happened:**
-- Firewall rules are applied at the network ingress layer, independent of authentication methods
-- Both Azure AD and Storage Key authentication must pass the firewall check first
-- The error message appearing after adding the IP suggests the firewall had already blocked the request
+1. Storage account → **Networking**
+2. **Firewalls and virtual networks**
+3. Click **+ Add client IP address** (auto-detect)
+4. Or manually enter: `37.111.194.103/32`
+5. **Save** (wait a few minutes for rules to apply)
+
+### 🚀 Alternative Approaches
+
+| Approach | Security | Complexity | Use Case |
+|----------|----------|-----------|----------|
+| Add IP to exception | ⭐⭐⭐ | Low | Recommended for specific IPs |
+| All networks | ⭐ | Low | Testing only (not production) |
+| Private endpoint | ⭐⭐⭐⭐ | High | Production with VNet access |
+| VPN/ExpressRoute | ⭐⭐⭐⭐ | High | On-premises hybrid access |
 
 ---
 
-## Issue 4: Storage Account Key vs. RBAC - Which to use for team members?
+## 🔑 Issue 4: Storage Key vs. RBAC - Which to Use?
 
-**Scenario:**
-- Owner wants to grant file share access to team members
-- Uncertain whether to share storage account keys or use RBAC roles
+### Scenario
+I needed file share access across team.  
+Decision: Share storage keys or use RBAC roles?
 
-**Decision made:**
+### ❌ DO NOT share storage keys
 
-**❌ DO NOT share storage account keys**
-- Keys grant **full access** to all data in the entire storage account
-- No per-user auditing (cannot see who did what, only "someone with the key")
-- If leaked, must rotate key (affects all users immediately)
-- Cannot be revoked selectively
+**Problems with sharing keys:**
+- Grant **full access** to entire storage account
+- No per-user audit trail (can't see WHO did WHAT)
+- If leaked → must rotate key → affects ALL users
+- Cannot be selectively revoked
+- Encourages credential sharing (security risk)
 
-**✅ DO assign RBAC roles instead**
-- Each user authenticates with their own Azure AD identity
-- Role-based access (e.g., read-only, read/write)
-- Fully auditable (can see exactly who accessed what, when)
-- Can be revoked immediately without affecting others
-- Works if user's machine is Azure AD joined
+### ✅ DO assign RBAC roles instead
 
-**Where to assign:**
-1. Open the storage account
-2. Select **Access Control (IAM)**
-3. Select **+ Add role assignment**
-4. Choose role: **Storage File Data SMB Share Contributor** (read/write) or **Storage File Data SMB Share Reader** (read-only)
-5. Assign to: Team member's user account or Azure AD group
-6. Select **Review + assign**
-7. Team member waits 5-15 minutes for role to propagate
-8. Team member runs: `net use Z: \\storagelab121455.file.core.windows.net\share1` (no key needed)
+**Advantages:**
+- ✓ Each user has own Azure AD identity
+- ✓ Granular roles (reader, contributor, etc.)
+- ✓ Full audit trail (WHO, WHAT, WHEN)
+- ✓ Revoke without affecting others
+- ✓ Works if machine is Azure AD joined
 
-**For applications/scripts (not people):**
-- Store storage account key in **Azure Key Vault** (not email/Slack)
-- Grant only the application access to the Key Vault
-- Rotate key regularly (e.g., quarterly)
+### 📋 Step-by-step: Assign RBAC
+
+```
+Storage account → Access Control (IAM)
+  ↓
++ Add role assignment
+  ↓
+Role: Storage File Data SMB Share Contributor
+  ↓
+Members: Select team member
+  ↓
+Review + assign
+  ↓
+⏱️ Wait 5-15 minutes for propagation
+  ↓
+Team member mounts share:
+net use Z: \\storagelab121455.file.core.windows.net\share1
+```
+
+### 🤖 For Applications/Scripts
+
+**DO use Azure Key Vault**
+
+❌ Never embed storage key in code  
+❌ Never email credentials  
+❌ Never commit to git
+
+✅ Store key in Azure Key Vault  
+✅ Grant app managed identity access to Key Vault  
+✅ Rotate key quarterly automatically
 
 ---
 
-## Issue 5: Net use command returned "System error 85" when disconnecting
+## 📛 Issue 5: Net Use Disconnect Failed - "System error 85"
 
-**Error:**
+### Error
 ```
 System error 85 has occurred.
 The local device name is already in use.
 ```
 
-**Root cause:**
-- Attempted to disconnect mounted Z: drive with `net use Z: /delete`
-- File Explorer window or another application still had Z: drive open
-- Cannot disconnect a drive that is actively in use
+### 🔍 Root Cause
+**File Explorer or another app still using the drive**
 
-**What was changed:**
-- Closed all File Explorer windows accessing Z: drive
-- Ran command with force flag: `net use Z: /delete /y`
+- I tried: `net use Z: /delete`
+- Windows blocks disconnect while drive is in use
+- File handles still open by running processes
 
-**Where to fix:**
-1. Close **all File Explorer windows** (especially those showing Z: drive)
-2. Close **all applications** that might be accessing files on Z: drive
-3. Run the disconnect command:
-   ```powershell
-   net use Z: /delete /y
-   ```
-4. If still stuck, restart the machine (Z: drive disconnects on reboot automatically)
+### ✅ Solution
 
-**Why this is needed:**
-- Windows locks a mounted drive if any process has an open file handle
-- The `/y` flag forces disconnection (bypasses the "are you sure" prompt)
-- Restarting ensures all file handles are released
+**Step 1: Close all applications**
+- Close **all File Explorer windows** (especially Z: drive)
+- Close any apps accessing files on Z: drive
+- Close text editors, IDEs, any file access
+
+**Step 2: Force disconnect**
+```powershell
+net use Z: /delete /y
+```
+
+**Step 3: If still stuck**
+- Restart the machine
+- Z: drive automatically unmounts on reboot
+
+### 💡 Prevention
+Before disconnecting:
+- Use `tasklist /v` to find processes with open files
+- Gracefully close applications first
+- Then disconnect
 
 ---
 
-## Issue 6: Credential rotated after exposure - What to do next
+## 🔄 Issue 6: Key Exposed - Rotate Immediately
 
-**Scenario:**
-- Storage account key was exposed in terminal commands and chat logs
-- Key was rotated immediately via Azure portal
-- User needed to know next steps
+### Scenario
+Storage key exposed in my terminal output, chat logs, or code.  
+What now?
 
-**Decision made:**
-
-**✅ Regenerate storage account key immediately after exposure**
+### ✅ IMMEDIATE ACTION: Rotate Key
 
 **Where to rotate:**
-1. Open the storage account
-2. Select **Access keys** from the left menu
-3. Click **Rotate** next to the exposed key (Key 1 or Key 2)
-4. Confirm the rotation
-5. The old key becomes invalid within seconds
-6. Any systems using the old key will fail (this is intentional)
 
-**After rotation:**
-- **Storage Browser:** Will automatically use the new key (no action needed)
-- **Mounted Z: drive:** Will become inaccessible; must remount with new key:
-  ```powershell
-  net use Z: /delete /y
-  net use Z: \\storagelab121455.file.core.windows.net\share1 /user:Azure\storagelab121455 <NEW-KEY>
-  ```
-- **Applications/scripts:** Must be updated with the new key (or use Azure Key Vault to manage rotation automatically)
+1. Storage account → **Access keys**
+2. Click **Rotate** (next to exposed key)
+3. Confirm rotation
+4. Old key becomes invalid **within seconds**
 
-**Best practice for production:**
-- Store keys in **Azure Key Vault** (not config files or command line)
-- Rotate keys **quarterly** on a schedule
-- Use **managed identities** for applications instead of storage keys
-- Enable **Storage Account Key Access** toggle only when necessary
+### ⚠️ After Rotation
 
----
+| System | Impact | Action |
+|--------|--------|--------|
+| **Storage Browser** | Auto-uses new key | None needed |
+| **Mounted Z: drive** | Becomes inaccessible | Remount with new key |
+| **Applications** | All connections fail | Update with new key |
+| **Scripts** | Need new key update | Refresh Key Vault |
 
-## Summary: Azure AD vs Storage Key Authentication
+### 🔄 Remount After Key Rotation
 
-| Aspect | Azure AD (RBAC Role) | Storage Account Key |
-|--------|---------------------|-------------------|
-| **Setup time** | Role assignment + 5-15 min propagation | Immediate (copy key) |
-| **Security** | Per-user identity, auditable, revocable | Full account access, not auditable |
-| **Best for** | Team members, employees | Emergency access, applications in Key Vault |
-| **Firewall interaction** | Blocks if firewall prevents Entra ID access | May work via alternate endpoint |
-| **Propagation delay** | 5-15 minutes | None |
-| **Audit trail** | Yes (every action logged with user identity) | No (just "someone with the key") |
-| **If compromised** | Revoke role immediately (others unaffected) | Rotate key (affects all users) |
+```powershell
+# Disconnect old mount
+net use Z: /delete /y
+
+# Remount with new key
+net use Z: \\storagelab121455.file.core.windows.net\share1 `
+  /user:Azure\storagelab121455 <NEW-KEY>
+```
+
+### 🏭 Production Best Practices
+
+✓ Store keys in **Azure Key Vault**  
+✓ Rotate quarterly on schedule  
+✓ Use **managed identities** (not keys)  
+✓ Audit all key access  
+✓ Enable "Storage Account Key Access" only when needed
 
 ---
 
-*Documentation of issues encountered in 02b File Storage lab. All issues have been identified and resolved. See README.md for the complete lab guide.*
+## 📊 Quick Reference: Auth Method Comparison
+
+| Feature | Azure AD Role | Storage Account Key |
+|---------|--------------|-------------------|
+| **Time to active** | 5-15 minutes ⏱️ | Immediate ⚡ |
+| **Security level** | ⭐⭐⭐⭐ High | ⭐⭐ Low |
+| **Auditable** | ✓ Full audit trail | ✗ Anonymous access |
+| **Best for** | Team members | Emergency only |
+| **Can revoke** | ✓ Instantly | ✗ Affects everyone |
+| **Propagation delay** | Yes (5-15 min) | No |
+| **If compromised** | Revoke role | Rotate key |
+
+---
+
+## 🎯 Summary
+
+**Issues documented:** 6 major authentication & access challenges  
+**Root causes:** Firewall, propagation delays, role assignment timing  
+**Solutions:** Network exceptions, patience, RBAC best practices  
+
+**Key takeaway:**  
+Use **RBAC roles for people**, **Storage Keys for emergencies only**, **Key Vault for apps**.
+
+---
+
+*Documentation of real issues encountered in 02b File Storage lab.  
+All issues identified and resolved. See README.md for complete lab guide.*
