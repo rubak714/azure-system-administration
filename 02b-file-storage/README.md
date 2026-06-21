@@ -87,7 +87,7 @@ graph TB
 - Built-in quota management
 - Integrated with Azure storage redundancy
 
-![Create file share dialog](screenshots/01-create-file-share.png)
+![Create file share dialog](screenshots/01-create-file-shares.png)
 
 *Creating a new file share with transaction optimized tier.*
 
