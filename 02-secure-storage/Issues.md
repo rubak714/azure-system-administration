@@ -14,6 +14,17 @@ SAS token generation has **5 interdependent settings** that must align:
 
 If one fails, access fails with cryptic errors.
 
+### ⚙️ Where to Enable (Portal Checklist)
+
+**From Storage Account → Overview page:**
+- **Containers** section → Select container → **Change access level** (Setting 1)
+- **Configuration** blade → Toggle **Allow storage account key access** (Setting 2)
+- **Configuration** blade → Ensure **Default to Microsoft Entra authorization** enabled (Setting 3)
+- **Access Control (IAM)** blade → **+ Add role assignment** (Setting 4)
+- **Containers** section → Right-click blob → **Generate SAS** (Setting 5)
+
+**Remember:** Check all 5 before testing SAS token access.
+
 ---
 
 ## ❌ Issue 1: Container Access Blocked
